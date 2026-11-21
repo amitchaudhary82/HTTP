@@ -1078,7 +1078,7 @@ paste the file above.
 - **What happens:** `200 OK` and one short sentence of GitHub's design
   philosophy (a different one each time).
 - **Lesson:** this is your first raw request to the **GitHub API** - the same
-  API the hello_HTTP repo uses with R. Try removing the `User-Agent` line:
+  API the GitHub_HTTP repo uses with R. Try removing the `User-Agent` line:
   GitHub refuses requests without one (`403`).
 
 ### 4.6 What you now know
@@ -1306,7 +1306,7 @@ yourself:
 
 ...and you can send the same requests with curl and with R's httr2, knowing
 exactly what they write for you. Further httr2 practice lives in the
-**hello_HTTP** repository.
+**GitHub_HTTP** repository.
 
 ## 7. Other files
 
