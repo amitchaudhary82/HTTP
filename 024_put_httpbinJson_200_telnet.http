@@ -1,0 +1,7 @@
+PUT /put HTTP/1.1
+Host: httpbin.org
+Content-Type: application/json
+Content-Length: 31
+Connection: close
+
+{"name":"Amit","city":"Zurich"}
