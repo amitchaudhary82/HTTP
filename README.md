@@ -126,19 +126,6 @@ Tips:
 - The files contain **only** the request: no comments, so copy-paste is
   always safe. All explanations live in this README.
 
-### File naming rule
-
-See `000_Syntax_NNN_method_scenario_status.txt`:
-
-```
-NNN_method_scenario_status_tool_server.http
-001_get_root_200_telnet_local.http
-   -> number 001, method GET, scenario "root", expect 200,
-      send with telnet to the local server
-```
-
-The **status number is your prediction**. Comparing it with what you
-actually get is the whole point of each experiment.
 
 ---
 
@@ -165,7 +152,12 @@ Host: localhost
 
 <img width="3536" height="1378" alt="CleanShot 2026-11-21 at 21 23 43@2x" src="https://github.com/user-attachments/assets/1be62d6f-e9e0-4b0b-878b-8432cb987896" />
 
-which corresponds to browser
+
+This can also be simulated in browser via using
+```bash
+http://localhost:8080
+```
+
 <img width="3182" height="632" alt="CleanShot 2026-11-21 at 21 28 18@2x" src="https://github.com/user-attachments/assets/8ddde72b-0799-4f47-b0c8-2fcb97a152b9" />
 
 
@@ -188,6 +180,9 @@ Host: localhost
   ask there instead". A browser follows this automatically; telnet doesn't.
 - **New concept:** redirects (3xx) and the `Location` header.
 
+<img width="3546" height="1352" alt="CleanShot 2026-11-21 at 21 46 50@2x" src="https://github.com/user-attachments/assets/31bf410c-5a3d-4ea6-8413-6183b66fe51d" />
+
+
 #### 003_get_folder_slash_200_telnet_local
 
 <!-- include: 1_telnet/003_get_folder_slash_200_telnet_local.http -->
@@ -195,12 +190,24 @@ Host: localhost
 GET /testFolder/ HTTP/1.1
 Host: localhost
 ```
+
+
 <!-- /include -->
 
 - **Objective:** follow the redirect by hand: ask for `/testFolder/`.
 - **What happens:** `200 OK` and a listing of the folder's content.
 - **Lesson:** for a folder, `/testFolder` and `/testFolder/` are different
   requests.
+
+
+This can also be simulated in browser via using
+```bash
+localhost:8080/testFolder/
+```
+<img width="3914" height="634" alt="CleanShot 2026-11-21 at 21 43 05@2x" src="https://github.com/user-attachments/assets/7ca2fdcd-85e2-4c36-92ac-e8028f676e73" />
+
+
+
 
 #### 004_get_missingFile_404_telnet_local
 
