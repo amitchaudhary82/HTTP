@@ -105,31 +105,17 @@ python3 -m http.server 8080 --bind 127.0.0.1
 
 ### Connect with telnet
 
-Open a **second** Terminal and connect (commands also in
-`1_telnet/000_run_telnet_connection.txt`):
+Open a **second** Terminal and connect to the server
 
 ```bash
 telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
-telnet httpbin.org 80       # internet server (files ending _telnet_internet; port 80 = plain HTTP)
+
 ```
+Source: `1_telnet/000_run_telnet_connection.txt`
 
 telnet opens a raw connection and sends whatever you type. The text to send
 is the **request file** of the experiment, in the folder `1_telnet/`:
 
-1. Open the file, e.g. `1_telnet/001_get_root_200_telnet_local.http`, in
-   VS Code or TextEdit (in Finder: right-click > Open With)
-2. Select everything (`Cmd + A`) and copy it (`Cmd + C`), **including the
-   empty line(s) at the end**
-3. Click into the telnet Terminal and paste (`Cmd + V`)
-4. The server's response appears below
-
-Shortcut without copy-paste: `cat` prints the file and `|` (pipe) passes it
-to telnet. `sleep 3` keeps the connection open long enough for the answer
-(run it from the repo folder):
-
-```bash
-(cat 1_telnet/001_get_root_200_telnet_local.http; sleep 3) | telnet 127.0.0.1 8080
-```
 
 Tips:
 - The **empty line at the end is part of the request**. Without it the server
@@ -154,19 +140,6 @@ NNN_method_scenario_status_tool_server.http
 The **status number is your prediction**. Comparing it with what you
 actually get is the whole point of each experiment.
 
-### Snippets in this README are generated
-
-Every request shown in this README is copied **automatically** from its
-file in `1_telnet/` or `2_openssl/` - those files are the golden source,
-the versions that actually ran. To change a request: edit the file, then run
-
-```bash
-bash build_readme.sh
-```
-
-which refreshes all snippets between the `<!-- include: ... -->` markers.
-Never edit a snippet directly in the README.
-
 ---
 
 ## 3. The experiments (telnet) - folder `1_telnet/`
@@ -189,6 +162,12 @@ Host: localhost
   `http_mini_server_root`. `/` means "the root", the top folder of the server.
 - **Notice:** the server answers `HTTP/1.0` even though you asked in 1.1. The
   Python mini server only speaks 1.0, and that's allowed.
+
+<img width="3536" height="1378" alt="CleanShot 2026-11-21 at 21 23 43@2x" src="https://github.com/user-attachments/assets/1be62d6f-e9e0-4b0b-878b-8432cb987896" />
+
+which corresponds to browser
+<img width="3182" height="632" alt="CleanShot 2026-11-21 at 21 28 18@2x" src="https://github.com/user-attachments/assets/8ddde72b-0799-4f47-b0c8-2fcb97a152b9" />
+
 
 ---
 
