@@ -159,7 +159,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET / HTTP/1.1
 Host: localhost
 ```
@@ -168,7 +168,7 @@ Host: localhost
 
 
 **Server Connection Confirmed**
-```http
+```bash
 MacBook-Pro-2:http_mini_server_root amitchaudhary$ python3 -m http.server 8080 --bind 127.0.0.1
 Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
 127.0.0.1 - - [21/Nov/2026 22:39:55] "GET / HTTP/1.1" 200 -
@@ -178,7 +178,7 @@ Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
 Trying 127.0.0.1...
 Connected to localhost.
