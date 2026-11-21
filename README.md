@@ -34,6 +34,11 @@ HTTP/
 
 ---
 
+<br>
+<br>
+<br>
+
+
 ## 1. The big idea in 60 seconds
 
 When you open a web page, your computer sends the server a short **text
@@ -73,6 +78,11 @@ thing at a time.
 
 ---
 
+<br>
+<br>
+<br>
+
+
 ## 2. Setup
 
 ### The servers we talk to
@@ -92,16 +102,20 @@ description of the request it received, so you can see exactly what you sent.
 ### Start the local server
 
 Open a Terminal, go into the server folder and start it
-(command also in `1_telnet/000_run_python_mini_server.txt`):
 
 ```bash
 cd http_mini_server_root
 python3 -m http.server 8080 --bind 127.0.0.1
 ```
 
+
+
+
+Additional Info:
 - `8080` is the **port**: like a door number on your computer
 - `127.0.0.1` means "this computer only", so nobody else can connect
 - leave this Terminal open; it shows every request it receives
+
 
 ### Connect with telnet
 
@@ -111,11 +125,9 @@ Open a **second** Terminal and connect to the server
 telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
 
 ```
-Source: `1_telnet/000_run_telnet_connection.txt`
+All requests are stored as files in `1_telnet/` and `2_openssl/`.
 
-telnet opens a raw connection and sends whatever you type. The text to send
-is the **request file** of the experiment, in the folder `1_telnet/`:
-
+Then paste the request shown with each experiment. The response appears below.
 
 Tips:
 - The **empty line at the end is part of the request**. Without it the server
@@ -127,20 +139,74 @@ Tips:
   always safe. All explanations live in this README.
 
 
----
+<br>
+<br>
+<br>
 
-## 3. The experiments (telnet) - folder `1_telnet/`
+
+## 3. The experiments (telnet)
 
 ### Level 1 - The first request
 
 #### 001_get_root_200_telnet_local
 
 <!-- include: 1_telnet/001_get_root_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET / HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET / HTTP/1.1
+Host: localhost
+
+HTTP/1.0 200 OK
+Server: SimpleHTTP Python/3.15.2
+Date: Sat, 21 Nov 2026 21:18:56 GMT
+Content-type: text/html; charset=utf-8
+Content-Length: 617
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style type="text/css">
+:root {
+color-scheme: light dark;
+}
+</style>
+<title>Directory listing for /</title>
+</head>
+<body>
+<h1>Directory listing for /</h1>
+<hr>
+<ul>
+<li><a href="Info_Encoding_Characters.txt">Info_Encoding_Characters.txt</a></li>
+<li><a href="test_file%25special%40parm%20german_a%CC%88.txt">test_file%special@parm german_ä.txt</a></li>
+<li><a href="testfile%20with%20space.txt">testfile with space.txt</a></li>
+<li><a href="testfile.txt">testfile.txt</a></li>
+<li><a href="testFolder/">testFolder/</a></li>
+</ul>
+<hr>
+</body>
+</html>
+Connection closed by foreign host.
+```
 
 - **Objective:** send the smallest valid request and get an answer.
 - **New concepts:** request line (`GET / HTTP/1.1`), the `Host` header
@@ -149,6 +215,9 @@ Host: localhost
   `http_mini_server_root`. `/` means "the root", the top folder of the server.
 - **Notice:** the server answers `HTTP/1.0` even though you asked in 1.1. The
   Python mini server only speaks 1.0, and that's allowed.
+- **Read the response:** `Content-Length: 617` = size of the HTML body in
+  bytes. `Connection closed by foreign host` = the server hung up after
+  answering (HTTP/1.0 does that every time).
 
 <img width="3536" height="1378" alt="CleanShot 2026-11-21 at 21 23 43@2x" src="https://github.com/user-attachments/assets/1be62d6f-e9e0-4b0b-878b-8432cb987896" />
 
@@ -168,17 +237,46 @@ http://localhost:8080
 #### 002_get_foldernoSlash_301_telnet_local
 
 <!-- include: 1_telnet/002_get_foldernoSlash_301_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testFolder HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET /testFolder HTTP/1.1
+Host: localhost
+
+HTTP/1.0 301 Moved Permanently
+Server: SimpleHTTP Python/3.15.2
+Date: Sat, 21 Nov 2026 21:20:00 GMT
+Location: /testFolder/
+Content-Length: 0
+
+Connection closed by foreign host.
+```
+
 - **Objective:** ask for a folder **without** the trailing slash: `/testFolder`.
 - **What happens:** `301 Moved Permanently` with a header
   `Location: /testFolder/`. The server says "the right address has a slash,
   ask there instead". A browser follows this automatically; telnet doesn't.
 - **New concept:** redirects (3xx) and the `Location` header.
+- **Read the response:** `Content-Length: 0` - no body at all, the
+  `Location` header is the whole message.
 
 <img width="3546" height="1352" alt="CleanShot 2026-11-21 at 21 46 50@2x" src="https://github.com/user-attachments/assets/31bf410c-5a3d-4ea6-8413-6183b66fe51d" />
 
@@ -186,13 +284,58 @@ Host: localhost
 #### 003_get_folder_slash_200_telnet_local
 
 <!-- include: 1_telnet/003_get_folder_slash_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testFolder/ HTTP/1.1
 Host: localhost
 ```
-
-
 <!-- /include -->
+
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET /testFolder/ HTTP/1.1
+Host: localhost
+
+HTTP/1.0 200 OK
+Server: SimpleHTTP Python/3.15.2
+Date: Sat, 21 Nov 2026 21:20:40 GMT
+Content-type: text/html; charset=utf-8
+Content-Length: 345
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style type="text/css">
+:root {
+color-scheme: light dark;
+}
+</style>
+<title>Directory listing for /testFolder/</title>
+</head>
+<body>
+<h1>Directory listing for /testFolder/</h1>
+<hr>
+<ul>
+<li><a href="testSubfolderFile.txt">testSubfolderFile.txt</a></li>
+</ul>
+<hr>
+</body>
+</html>
+Connection closed by foreign host.
+```
 
 - **Objective:** follow the redirect by hand: ask for `/testFolder/`.
 - **What happens:** `200 OK` and a listing of the folder's content.
@@ -212,17 +355,65 @@ localhost:8080/testFolder/
 #### 004_get_missingFile_404_telnet_local
 
 <!-- include: 1_telnet/004_get_missingFile_404_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /missingFile.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET /missingFile.txt HTTP/1.1
+Host: localhost        
+
+HTTP/1.0 404 File not found
+Server: SimpleHTTP Python/3.15.2
+Date: Sat, 21 Nov 2026 21:21:33 GMT
+Connection: close
+Content-Type: text/html;charset=utf-8
+Content-Length: 460
+
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <style type="text/css">
+            :root {
+                color-scheme: light dark;
+            }
+        </style>
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: 404</p>
+        <p>Message: File not found.</p>
+        <p>Error code explanation: 404 - Nothing matches the given URI.</p>
+    </body>
+</html>
+Connection closed by foreign host.
+```
+
 - **Objective:** ask for a file that does not exist.
 - **What happens:** `404 File not found`. The connection worked, the request
   was valid, there is just nothing at that path.
 - **Lesson:** 4xx means "your request asked for something wrong", not "the
   server is broken".
+- **Read the response:** even an error has a body - an HTML error page
+  (`Content-Length: 460`).
 
 ---
 
@@ -236,6 +427,14 @@ under `"args"`.
 #### 029_get_httpbin_queryString_200_telnet_internet
 
 <!-- include: 1_telnet/029_get_httpbin_queryString_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get?name=Amit&city=Zurich HTTP/1.1
 Host: httpbin.org
@@ -244,13 +443,59 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
+Trying 54.172.45.38...
+Connected to httpbin.org.
+Escape character is '^]'.
+GET /get?name=Amit&city=Zurich HTTP/1.1
+Host: httpbin.org
+Connection: close
+
+HTTP/1.1 200 OK
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Retry-After, RateLimit, RateLimit-Policy, WWW-Authenticate
+content-length: 211
+content-type: application/json
+x-content-type-options: nosniff
+date: Sat, 21 Nov 2026 21:22:39 GMT
+connection: close
+
+{
+  "args": {
+    "city": "Zurich",
+    "name": "Amit"
+  },
+  "headers": {
+    "Host": "httpbin.org"
+  },
+  "method": "GET",
+  "origin": "xx.xxx.xxx.x",
+  "url": "http://httpbin.org/get?name=Amit&city=Zurich"
+}
+Connection closed by foreign host.
+```
+
 - **Objective:** send two query parameters.
 - **What happens:** `200 OK`, JSON with `"args": {"city": "Zurich", "name": "Amit"}`.
 - **Lesson:** `?` starts the query, `=` joins key and value, `&` separates pairs.
+- **Read the response:** `"headers"` lists only `Host` - telnet sends nothing
+  you didn't type. (curl and httr2 add more, see chapter 5.)
 
 #### 030_get_httpbin_querySpaceEncoded_200_telnet_internet
 
 <!-- include: 1_telnet/030_get_httpbin_querySpaceEncoded_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get?city=St%20Gallen HTTP/1.1
 Host: httpbin.org
@@ -259,13 +504,57 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
+Trying 54.172.45.38...
+Connected to httpbin.org.
+Escape character is '^]'.
+GET /get?city=St%20Gallen HTTP/1.1
+Host: httpbin.org
+Connection: close
+
+HTTP/1.1 200 OK
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Retry-After, RateLimit, RateLimit-Policy, WWW-Authenticate
+content-length: 189
+content-type: application/json
+x-content-type-options: nosniff
+date: Sat, 21 Nov 2026 21:24:11 GMT
+connection: close
+
+{
+  "args": {
+    "city": "St Gallen"
+  },
+  "headers": {
+    "Host": "httpbin.org"
+  },
+  "method": "GET",
+  "origin": "xx.xxx.xxx.x",
+  "url": "http://httpbin.org/get?city=St%20Gallen"
+}
+Connection closed by foreign host.
+```
+
 - **Objective:** a value with a space: `city=St%20Gallen`.
-- **What happens:** `"args": {"city": "St Gallen"}`.
+- **What happens:** `"args": {"city": "St Gallen"}`, while `"url"` still
+  shows `St%20Gallen`: the URL travels encoded, the value arrives decoded.
 - **Lesson:** the same `%20` rule as in paths (Level 5) applies in the query.
 
 #### 031_get_httpbin_queryAmpersandEncoded_200_telnet_internet
 
 <!-- include: 1_telnet/031_get_httpbin_queryAmpersandEncoded_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get?company=Johnson%26Johnson&country=US HTTP/1.1
 Host: httpbin.org
@@ -274,14 +563,59 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
+Trying 3.221.253.123...
+Connected to httpbin.org.
+Escape character is '^]'.
+GET /get?company=Johnson%26Johnson&country=US HTTP/1.1
+Host: httpbin.org
+Connection: close
+
+HTTP/1.1 200 OK
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Retry-After, RateLimit, RateLimit-Policy, WWW-Authenticate
+content-length: 239
+content-type: application/json
+x-content-type-options: nosniff
+date: Sat, 21 Nov 2026 21:25:44 GMT
+connection: close
+
+{
+  "args": {
+    "company": "Johnson&Johnson",
+    "country": "US"
+  },
+  "headers": {
+    "Host": "httpbin.org"
+  },
+  "method": "GET",
+  "origin": "xx.xxx.xxx.x",
+  "url": "http://httpbin.org/get?company=Johnson%26Johnson&country=US"
+}
+Connection closed by foreign host.
+```
+
 - **Objective:** a value that contains `&`: `company=Johnson%26Johnson`.
-- **What happens:** `"company": "Johnson&Johnson"` stays one value.
+- **What happens:** two values: `"company": "Johnson&Johnson"` and
+  `"country": "US"` - the encoded `%26` stayed inside the value.
 - **Lesson:** a raw `&` would start a new parameter, so inside a value it must
   be encoded as `%26`. Try it unencoded and see the value split in two.
 
 #### 032_get_httpbin_queryPlusSign_200_telnet_internet
 
 <!-- include: 1_telnet/032_get_httpbin_queryPlusSign_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get?q=a+b&r=a%2Bb HTTP/1.1
 Host: httpbin.org
@@ -289,6 +623,42 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
+Trying 3.221.253.123...
+Connected to httpbin.org.
+Escape character is '^]'.
+GET /get?q=a+b&r=a%2Bb HTTP/1.1
+Host: httpbin.org
+Connection: close
+
+HTTP/1.1 200 OK
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Retry-After, RateLimit, RateLimit-Policy, WWW-Authenticate
+content-length: 193
+content-type: application/json
+x-content-type-options: nosniff
+date: Sat, 21 Nov 2026 21:26:33 GMT
+connection: close
+
+{
+  "args": {
+    "q": "a b",
+    "r": "a+b"
+  },
+  "headers": {
+    "Host": "httpbin.org"
+  },
+  "method": "GET",
+  "origin": "xx.xxx.xxx.x",
+  "url": "http://httpbin.org/get?q=a+b&r=a%2Bb"
+}
+Connection closed by foreign host.
+```
 
 - **Objective:** compare `q=a+b` with `r=a%2Bb`.
 - **What happens:** `"q": "a b"` but `"r": "a+b"`.
@@ -302,11 +672,25 @@ Connection: close
 #### 005_head_root_200_telnet_local
 
 <!-- include: 1_telnet/005_head_root_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 HEAD / HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** use the `HEAD` method instead of `GET`.
 - **What happens:** `200 OK` with the same headers as 001, but **no body**.
@@ -316,11 +700,25 @@ Host: localhost
 #### 006_get_badMethod_501_telnet_local
 
 <!-- include: 1_telnet/006_get_badMethod_501_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 BADMETHOD / HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** invent a method the server doesn't know: `BADMETHOD`.
 - **What happens:** `501 Unsupported method ('BADMETHOD')`.
@@ -363,11 +761,25 @@ two comments). That's the real difference between POST and PUT.
 #### 007_get_file_200_telnet_local
 
 <!-- include: 1_telnet/007_get_file_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testfile.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** download an actual file: `/testfile.txt`.
 - **What happens:** `200 OK`, `Content-Type: text/plain`, a `Content-Length`
@@ -379,11 +791,25 @@ Host: localhost
 #### 008_get_subFolderFile_200_telnet_local
 
 <!-- include: 1_telnet/008_get_subFolderFile_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testFolder/testSubfolderFile.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** reach a file inside a sub-folder:
   `/testFolder/testSubfolderFile.txt`.
@@ -393,11 +819,25 @@ Host: localhost
 #### 009_get_doubleSlash_200_telnet_local
 
 <!-- include: 1_telnet/009_get_doubleSlash_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET // HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** see how the server handles a strange path: `//`.
 - **What happens:** `200 OK`, the root listing again: the server tidies the
@@ -408,12 +848,26 @@ Host: localhost
 #### 033_head_file_headers_200_telnet_local
 
 <!-- include: 1_telnet/033_head_file_headers_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 HEAD /testfile.txt HTTP/1.1
 Host: localhost
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** study the response headers on their own, without a body in
   the way.
@@ -441,11 +895,25 @@ Background notes: `http_mini_server_root/Info_Encoding_Characters.txt`.
 #### 010_get_fileNameSpaces_400_telnet_local
 
 <!-- include: 1_telnet/010_get_fileNameSpaces_400_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testfile with space.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** ask for a file whose name contains spaces, typed as-is.
 - **What happens:** `400 Bad Request`. The request line must be exactly
@@ -456,11 +924,25 @@ Host: localhost
 #### 011_get_fileNameQuotes_400_telnet_local
 
 <!-- include: 1_telnet/011_get_fileNameQuotes_400_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /"testfile with space.txt" HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** try to "protect" the spaces with quotes.
 - **What happens:** still `400 Bad Request`.
@@ -470,11 +952,25 @@ Host: localhost
 #### 012_get_fileNameUrlEncoding_200_telnet_local
 
 <!-- include: 1_telnet/012_get_fileNameUrlEncoding_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /testfile%20with%20space.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** write each space as `%20`.
 - **What happens:** `200 OK`, the file is found.
@@ -485,11 +981,25 @@ Host: localhost
 #### 013_get_fileNameSpecialCharUrlEncoding_200_telnet_local
 
 <!-- include: 1_telnet/013_get_fileNameSpecialCharUrlEncoding_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET /test_file%25special%40parm%20german_%C3%A4.txt HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** encode several special characters at once.
 - **What happens:** `200 OK` for the file `test_file%special@parm german_ä.txt`.
@@ -504,6 +1014,8 @@ Host: localhost
 
 - **Lesson:** libraries (browsers, curl, R's httr2) do this encoding for
   you. Here you did it by hand, so you know what's happening underneath.
+- **Notice:** in the 001 listing this file's link is `german_a%CC%88`:
+  macOS stores `ä` as `a` + `¨` (two characters). Both forms find the file.
 
 ---
 
@@ -514,12 +1026,26 @@ From here on: `telnet httpbin.org 80` (or `telnet example.org 80` for 016).
 #### 014_get_httpbin_get_200_telnet_internet
 
 <!-- include: 1_telnet/014_get_httpbin_get_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET / HTTP/1.1
 Host: httpbin.org
 Connection: close
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** the same kind of request as 001, but to a real server.
 - **New header:** `Connection: close`, asking the server to hang up after
@@ -532,6 +1058,14 @@ Connection: close
 #### 015_get_httpbin_ip_200_telnet_internet
 
 <!-- include: 1_telnet/015_get_httpbin_ip_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /ip HTTP/1.1
 Host: httpbin.org
@@ -539,6 +1073,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** ask for `/ip`, an *API endpoint* rather than a web page.
 - **What happens:** `200 OK` with `Content-Type: application/json` and a
@@ -549,6 +1089,14 @@ Connection: close
 #### 016_get_example_200_telnet_internet
 
 <!-- include: 1_telnet/016_get_example_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet example.org 80
+```
+
+**Request**
+
 ```http
 GET / HTTP/1.1
 Host: example.org
@@ -556,6 +1104,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** a different public server: `example.org`.
 - **What happens:** `200 OK` with a small HTML page ("Example Domain").
@@ -565,12 +1119,26 @@ Connection: close
 #### 034_get_httpbin_missingHost_400_telnet_internet
 
 <!-- include: 1_telnet/034_get_httpbin_missingHost_400_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get HTTP/1.1
 Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** leave out the `Host` header on a real server.
 - **What happens:** `400 Bad Request`.
@@ -580,11 +1148,25 @@ Connection: close
 #### 035_get_root_missingHost_200_telnet_local
 
 <!-- include: 1_telnet/035_get_root_missingHost_200_telnet_local.http -->
+**Connect**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+**Request**
+
 ```http
 GET / HTTP/1.1
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** the same mistake on the local mini server.
 - **What happens:** `200 OK` - it answers anyway.
@@ -601,6 +1183,14 @@ see codes you rarely meet on purpose.
 #### 036_get_httpbin_status201_201_telnet_internet
 
 <!-- include: 1_telnet/036_get_httpbin_status201_201_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /status/201 HTTP/1.1
 Host: httpbin.org
@@ -609,6 +1199,12 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **What happens:** `201 CREATED`.
 - **Lesson:** 201 is the typical answer to a successful POST that created
   something new (an issue, an order).
@@ -616,6 +1212,14 @@ Connection: close
 #### 037_get_httpbin_status204_204_telnet_internet
 
 <!-- include: 1_telnet/037_get_httpbin_status204_204_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /status/204 HTTP/1.1
 Host: httpbin.org
@@ -624,6 +1228,12 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **What happens:** `204 NO CONTENT` and no body at all.
 - **Lesson:** success doesn't always come with data. A DELETE often answers
   204: "done, nothing more to say".
@@ -631,6 +1241,14 @@ Connection: close
 #### 038_get_httpbin_status500_500_telnet_internet
 
 <!-- include: 1_telnet/038_get_httpbin_status500_500_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /status/500 HTTP/1.1
 Host: httpbin.org
@@ -639,6 +1257,12 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **What happens:** `500 INTERNAL SERVER ERROR`.
 - **Lesson:** the classic "the server broke" code. Your request was fine;
   retrying later may help.
@@ -646,6 +1270,14 @@ Connection: close
 #### 039_get_httpbin_redirectChain_302_telnet_internet
 
 <!-- include: 1_telnet/039_get_httpbin_redirectChain_302_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /redirect/2 HTTP/1.1
 Host: httpbin.org
@@ -653,6 +1285,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** follow a chain of redirects by hand.
 - **What happens:** `302 FOUND` with a `Location` header pointing to the next
@@ -671,6 +1309,14 @@ the empty line. httpbin's `/post` endpoint echoes back what it received.
 #### 017_post_httpbinText_200_telnet_internet
 
 <!-- include: 1_telnet/017_post_httpbinText_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -681,6 +1327,12 @@ Connection: close
 hello world
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send the text `hello world`.
 - **New concepts:**
@@ -693,6 +1345,14 @@ hello world
 #### 018_post_httpbinJson_200_telnet_internet
 
 <!-- include: 1_telnet/018_post_httpbinJson_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -702,6 +1362,12 @@ Content-Length: 36
 {"name":"Amit","city":"Switzerland"}
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send JSON data: `{"name":"Amit","city":"Switzerland"}`.
 - **What happens:** `200 OK`. Because `Content-Type` says
@@ -722,6 +1388,14 @@ count on purpose to see what happens.
 #### 019_post_httpbinText_shortLength_200_telnet_internet
 
 <!-- include: 1_telnet/019_post_httpbinText_shortLength_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -733,6 +1407,12 @@ hello world
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **Objective:** say `Content-Length: 8`, but send 11 bytes.
 - **What happens:** `200 OK`, but `"data": "hello wo"`. The server read
   exactly 8 bytes and ignored the rest (`rld`).
@@ -741,6 +1421,14 @@ hello world
 #### 020_post_httpbinText_longLength_timeout_telnet_internet
 
 <!-- include: 1_telnet/020_post_httpbinText_longLength_timeout_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -752,6 +1440,12 @@ hello world
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **Objective:** say `Content-Length: 25`, but send only 11 bytes.
 - **What happens:** **nothing, for a while.** The server waits for the 14
   missing bytes. After a timeout it gives up or closes the connection.
@@ -761,6 +1455,14 @@ hello world
 #### 021_post_httpbinText_missingLengthNoData_telnet_internet
 
 <!-- include: 1_telnet/021_post_httpbinText_missingLengthNoData_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -770,6 +1472,12 @@ Connection: close
 hello world
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** leave `Content-Length` out completely.
 - **What happens:** the server assumes the body is **empty**: the reply shows
@@ -781,6 +1489,14 @@ hello world
 #### 022_post_httpbinText_missingBlankLine_400_telnet_internet
 
 <!-- include: 1_telnet/022_post_httpbinText_missingBlankLine_400_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 POST /post HTTP/1.1
 Host: httpbin.org
@@ -790,6 +1506,12 @@ Content-Length: 11
 hello world
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** forget the empty line between headers and body.
 - **What happens:** `400 Bad Request`. Without the empty line the server
@@ -805,6 +1527,14 @@ hello world
 #### 023_get_httpbin_multipleHeaders_200_telnet_internet
 
 <!-- include: 1_telnet/023_get_httpbin_multipleHeaders_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get HTTP/1.1
 Host: httpbin.org
@@ -813,6 +1543,12 @@ User-Agent: FileTest/1.0
 Connection: close
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send several headers and see them arrive.
 - **New headers:**
@@ -831,6 +1567,14 @@ Connection: close
 #### 040_get_httpbin_bearerMissing_401_telnet_internet
 
 <!-- include: 1_telnet/040_get_httpbin_bearerMissing_401_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /bearer HTTP/1.1
 Host: httpbin.org
@@ -838,6 +1582,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** ask for something protected, without proving who you are.
 - **What happens:** `401 UNAUTHORIZED`, usually with a `WWW-Authenticate`
@@ -848,6 +1598,14 @@ Connection: close
 #### 041_get_httpbin_bearerToken_200_telnet_internet
 
 <!-- include: 1_telnet/041_get_httpbin_bearerToken_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /bearer HTTP/1.1
 Host: httpbin.org
@@ -856,6 +1614,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send a token in the `Authorization` header.
 - **What happens:** `200 OK`, JSON `{"authenticated": true, "token": "test123"}`.
@@ -866,6 +1630,14 @@ Connection: close
 #### 042_get_httpbin_keepAliveTwoRequests_200_telnet_internet
 
 <!-- include: 1_telnet/042_get_httpbin_keepAliveTwoRequests_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /get?request=1 HTTP/1.1
 Host: httpbin.org
@@ -876,6 +1648,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send two requests over **one** connection.
 - **What happens:** two complete responses, one after the other
@@ -894,6 +1672,14 @@ echoes back what it received. Same idea as Level 7, new methods.
 #### 024_put_httpbinJson_200_telnet_internet
 
 <!-- include: 1_telnet/024_put_httpbinJson_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 PUT /put HTTP/1.1
 Host: httpbin.org
@@ -905,6 +1691,12 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **Objective:** replace a whole resource with PUT: `{"name":"Amit","city":"Zurich"}`.
 - **What happens:** `200 OK`, the reply shows your data under `"json"`.
 - **Notice:** the request looks exactly like a POST - only the method word
@@ -914,6 +1706,14 @@ Connection: close
 #### 025_patch_httpbinJson_200_telnet_internet
 
 <!-- include: 1_telnet/025_patch_httpbinJson_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 PATCH /patch HTTP/1.1
 Host: httpbin.org
@@ -925,6 +1725,12 @@ Connection: close
 ```
 <!-- /include -->
 
+**Response**
+
+```http
+(paste the response from telnet here)
+```
+
 - **Objective:** change only one field with PATCH: `{"city":"Bern"}`.
 - **What happens:** `200 OK`, the reply echoes `"city": "Bern"`.
 - **Lesson:** PATCH sends only the part that changes, PUT sends everything.
@@ -932,6 +1738,14 @@ Connection: close
 #### 026_delete_httpbin_200_telnet_internet
 
 <!-- include: 1_telnet/026_delete_httpbin_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 DELETE /delete HTTP/1.1
 Host: httpbin.org
@@ -939,6 +1753,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** send a DELETE request.
 - **What happens:** `200 OK` with a JSON echo. (httpbin has nothing to
@@ -949,6 +1769,14 @@ Connection: close
 #### 027_options_httpbin_200_telnet_internet
 
 <!-- include: 1_telnet/027_options_httpbin_200_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 OPTIONS /get HTTP/1.1
 Host: httpbin.org
@@ -956,6 +1784,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** ask the server which methods it accepts at `/get`.
 - **What happens:** `200 OK` with an `Allow` header, e.g.
@@ -965,6 +1799,14 @@ Connection: close
 #### 028_get_httpbin_wrongMethod_405_telnet_internet
 
 <!-- include: 1_telnet/028_get_httpbin_wrongMethod_405_telnet_internet.http -->
+**Connect**
+
+```bash
+telnet httpbin.org 80
+```
+
+**Request**
+
 ```http
 GET /post HTTP/1.1
 Host: httpbin.org
@@ -972,6 +1814,12 @@ Connection: close
 
 ```
 <!-- /include -->
+
+**Response**
+
+```http
+(paste the response from telnet here)
+```
 
 - **Objective:** use the wrong method: `GET` on `/post`, which only
   accepts POST.
@@ -982,7 +1830,12 @@ Connection: close
 
 ---
 
-## 4. Bridge: from HTTP to HTTPS - folder `2_openssl/`
+<br>
+<br>
+<br>
+
+
+## 4. Bridge: from HTTP to HTTPS
 
 Almost every real API (GitHub included) only speaks **HTTPS**. telnet can't
 do that. This chapter shows that HTTPS is **the same HTTP you already know,
@@ -1028,6 +1881,14 @@ No new file needed. Connect to `example.org:443` as above, then paste
 ### 4.4 043_get_httpbin_https_200_openssl
 
 <!-- include: 2_openssl/043_get_httpbin_https_200_openssl.http -->
+**Connect**
+
+```bash
+openssl s_client -connect httpbin.org:443 -quiet -crlf
+```
+
+**Request**
+
 ```http
 GET /get HTTP/1.1
 Host: httpbin.org
@@ -1038,8 +1899,11 @@ Connection: close
 ```
 <!-- /include -->
 
-Connect with `openssl s_client -connect httpbin.org:443 -quiet -crlf` and
-paste `2_openssl/043_get_httpbin_https_200_openssl.http` (the same request as 023).
+**Response**
+
+```http
+(paste the response from openssl here)
+```
 
 - **What happens:** `200 OK`, and the JSON echo now says
   `"url": "https://httpbin.org/get"` - with an **s**.
@@ -1048,6 +1912,14 @@ paste `2_openssl/043_get_httpbin_https_200_openssl.http` (the same request as 02
 ### 4.5 044_get_githubApi_zen_200_openssl
 
 <!-- include: 2_openssl/044_get_githubApi_zen_200_openssl.http -->
+**Connect**
+
+```bash
+openssl s_client -connect api.github.com:443 -quiet -crlf
+```
+
+**Request**
+
 ```http
 GET /zen HTTP/1.1
 Host: api.github.com
@@ -1058,8 +1930,11 @@ Connection: close
 ```
 <!-- /include -->
 
-Connect with `openssl s_client -connect api.github.com:443 -quiet -crlf` and
-paste the file above.
+**Response**
+
+```http
+(paste the response from openssl here)
+```
 
 - **What happens:** `200 OK` and one short sentence of GitHub's design
   philosophy (a different one each time).
@@ -1079,6 +1954,11 @@ paste the file above.
 Next step: tools that write the request text for you too.
 
 ---
+
+<br>
+<br>
+<br>
+
 
 ## 5. The same examples three ways: telnet, curl, RStudio
 
@@ -1271,6 +2151,11 @@ In `-v` output, the lines starting with `*` show the TLS tunnel being built
 
 ---
 
+<br>
+<br>
+<br>
+
+
 ## 6. What you can do now
 
 After these 44 experiments you have written every part of an HTTP request
@@ -1294,6 +2179,11 @@ yourself:
 exactly what they write for you. Further httr2 practice lives in the
 **GitHub_HTTP** repository.
 
+<br>
+<br>
+<br>
+
+
 ## 7. Other files
 
 | File | Content |
@@ -1301,7 +2191,7 @@ exactly what they write for you. Further httr2 practice lives in the
 | `000_Syntax_NNN_method_scenario_status.txt` | file naming rule |
 | `build_readme.sh` | copies the request files into this README |
 | `1_telnet/000_run_python_mini_server.txt` | command to start the local server |
-| `1_telnet/000_run_telnet_connection.txt` | command to connect to httpbin |
+| `1_telnet/000_run_telnet_connection.txt` | commands to connect (local server, httpbin) |
 | `2_openssl/000_run_openssl_connection.txt` | commands for HTTPS connections (chapter 4) |
 | `3_curl/curl_examples.sh` | all examples with curl |
 | `4_rstudio/httr2_examples.R` | all examples with httr2 |
