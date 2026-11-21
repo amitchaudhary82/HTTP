@@ -12,3 +12,6 @@ status: expected status like 200, 403, 500
 
 
 
+
+server suffix: _local (Python mini server), _telnet (internet, port 80), _openssl (HTTPS, port 443)
+Example: 001_get_root_200_local.http

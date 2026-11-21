@@ -1,0 +1,3 @@
+HEAD /testfile.txt HTTP/1.1
+Host: localhost
+

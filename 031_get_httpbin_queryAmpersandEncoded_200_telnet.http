@@ -1,0 +1,4 @@
+GET /get?company=Johnson%26Johnson&country=US HTTP/1.1
+Host: httpbin.org
+Connection: close
+

@@ -1,0 +1,4 @@
+GET /get?q=a+b&r=a%2Bb HTTP/1.1
+Host: httpbin.org
+Connection: close
+

@@ -4,8 +4,16 @@ This repository teaches HTTP, the language browsers and apps use to talk to
 web servers, by **typing raw requests by hand** and watching what the server
 answers. No browser, no library: just text over a connection.
 
-Each file is one small experiment. They are numbered so that every step builds
-on the one before. Work through them in order.
+Each file is one small experiment. They are numbered in the order they were
+created; the chapters below arrange them into **levels** that build on each
+other. Work through the levels in order.
+
+| Chapter | What you learn | Tool |
+|---|---|---|
+| 1 - 2 | What HTTP is, how to set up | - |
+| 3 | 44 experiments with raw requests | telnet |
+| 4 | Bridge: the same requests, encrypted (HTTPS) | openssl |
+| 5 | The same examples three ways | telnet, curl, RStudio (httr2) |
 
 ---
 
@@ -41,21 +49,22 @@ thing at a time.
 
 | Family | Meaning | Examples in this repo |
 |---|---|---|
-| 2xx | Success | 200 OK |
-| 3xx | Go somewhere else | 301 Moved Permanently |
-| 4xx | **Your** request has a problem | 400 Bad Request, 404 Not Found, 405 Method Not Allowed |
-| 5xx | The **server** can't do it | 501 Not Implemented |
+| 2xx | Success | 200 OK, 201 Created, 204 No Content |
+| 3xx | Go somewhere else | 301 Moved Permanently, 302 Found |
+| 4xx | **Your** request has a problem | 400 Bad Request, 401 Unauthorized, 404 Not Found, 405 Method Not Allowed |
+| 5xx | The **server** can't do it | 500 Internal Server Error, 501 Not Implemented |
 
 ---
 
 ## 2. Setup
 
-### The two servers we talk to
+### The servers we talk to
 
-| Server | What | Used in |
+| Server | What | File suffix |
 |---|---|---|
-| Local mini server | Python's built-in web server, on your own Mac | 001 - 013 |
-| httpbin.org / example.org | Real servers on the internet | 014 - 028 |
+| Local mini server | Python's built-in web server, on your own Mac | `_local` |
+| httpbin.org / example.org | Real test servers on the internet, plain HTTP | `_telnet` |
+| httpbin.org / api.github.com | The same, encrypted (HTTPS) - chapter 4 | `_openssl` |
 
 **httpbin.org** is a test server made for learning: it replies with a
 description of the request it received, so you can see exactly what you sent.
@@ -76,12 +85,12 @@ python3 -m http.server 8080 --bind 127.0.0.1
 
 ### Connect with telnet
 
-Open a **second** Terminal and connect (command for httpbin in
+Open a **second** Terminal and connect (commands also in
 `000_run_telnet_connection.txt`):
 
 ```bash
-telnet 127.0.0.1 8080       # local server
-telnet httpbin.org 80       # internet server (port 80 = plain HTTP)
+telnet 127.0.0.1 8080       # local server (files ending _local)
+telnet httpbin.org 80       # internet server (files ending _telnet; port 80 = plain HTTP)
 ```
 
 telnet opens a raw connection and sends whatever you type. Now **copy the
@@ -94,26 +103,29 @@ Tips:
 - The local server answers once and closes the connection. Connect again for
   the next file.
 - To quit a hanging telnet: press `Ctrl + ]`, then type `quit`.
+- The files contain **only** the request: no comments, so copy-paste is
+  always safe. All explanations live in this README.
 
 ### File naming rule
 
-See `000_Syntax_NNN_method_scenario_status.http`:
+See `000_Syntax_NNN_method_scenario_status.txt`:
 
 ```
-NNN_method_scenario_status.http
-001_get_root_200.http   ->  number 001, method GET, scenario "root", expect 200
+NNN_method_scenario_status_server.http
+001_get_root_200_local.http   ->  number 001, method GET, scenario "root",
+                                  expect 200, send to the local server
 ```
 
-The **last number is the status code you expect**. Comparing it with what you
+The **status number is your prediction**. Comparing it with what you
 actually get is the whole point of each experiment.
 
 ---
 
-## 3. The experiments
+## 3. The experiments (telnet)
 
 ### Level 1 - The first request
 
-#### 001_get_root_200
+#### 001_get_root_200_local
 ```
 GET / HTTP/1.1
 Host: localhost
@@ -130,20 +142,20 @@ Host: localhost
 
 ### Level 2 - Paths: asking for different things
 
-#### 002_get_foldernoSlash_301
+#### 002_get_foldernoSlash_301_local
 - **Objective:** ask for a folder **without** the trailing slash: `/testFolder`.
 - **What happens:** `301 Moved Permanently` with a header
   `Location: /testFolder/`. The server says "the right address has a slash,
   ask there instead". A browser follows this automatically; telnet doesn't.
 - **New concept:** redirects (3xx) and the `Location` header.
 
-#### 003_get_folder_slash_200
+#### 003_get_folder_slash_200_local
 - **Objective:** follow the redirect by hand: ask for `/testFolder/`.
 - **What happens:** `200 OK` and a listing of the folder's content.
 - **Lesson:** for a folder, `/testFolder` and `/testFolder/` are different
   requests.
 
-#### 004_get_missingFile_404
+#### 004_get_missingFile_404_local
 - **Objective:** ask for a file that does not exist.
 - **What happens:** `404 File not found`. The connection worked, the request
   was valid, there is just nothing at that path.
@@ -152,15 +164,49 @@ Host: localhost
 
 ---
 
+### Level 2b - Query strings: asking with options
+
+The path says **what** you want. The **query**, everything after `?`, says
+**how** you want it: `key=value` pairs joined by `&`. These go to httpbin
+(`telnet httpbin.org 80`), whose `/get` replies with the pairs it understood
+under `"args"`.
+
+#### 029_get_httpbin_queryString_200_telnet
+```
+GET /get?name=Amit&city=Zurich HTTP/1.1
+```
+- **Objective:** send two query parameters.
+- **What happens:** `200 OK`, JSON with `"args": {"city": "Zurich", "name": "Amit"}`.
+- **Lesson:** `?` starts the query, `=` joins key and value, `&` separates pairs.
+
+#### 030_get_httpbin_querySpaceEncoded_200_telnet
+- **Objective:** a value with a space: `city=St%20Gallen`.
+- **What happens:** `"args": {"city": "St Gallen"}`.
+- **Lesson:** the same `%20` rule as in paths (Level 5) applies in the query.
+
+#### 031_get_httpbin_queryAmpersandEncoded_200_telnet
+- **Objective:** a value that contains `&`: `company=Johnson%26Johnson`.
+- **What happens:** `"company": "Johnson&Johnson"` stays one value.
+- **Lesson:** a raw `&` would start a new parameter, so inside a value it must
+  be encoded as `%26`. Try it unencoded and see the value split in two.
+
+#### 032_get_httpbin_queryPlusSign_200_telnet
+- **Objective:** compare `q=a+b` with `r=a%2Bb`.
+- **What happens:** `"q": "a b"` but `"r": "a+b"`.
+- **Lesson:** in a **query**, `+` traditionally means a space. A real plus
+  sign must be sent as `%2B`. (In a *path*, `+` is just a plus.)
+
+---
+
 ### Level 3 - Methods: what you want to do
 
-#### 005_head_root_200
+#### 005_head_root_200_local
 - **Objective:** use the `HEAD` method instead of `GET`.
 - **What happens:** `200 OK` with the same headers as 001, but **no body**.
 - **Lesson:** the method says *what to do*. `HEAD` = "only tell me about it"
   (size, type, date), useful to check something without downloading it.
 
-#### 006_get_badMethod_501
+#### 006_get_badMethod_501_local
 - **Objective:** invent a method the server doesn't know: `BADMETHOD`.
 - **What happens:** `501 Unsupported method ('BADMETHOD')`.
 - **Lesson:** a method is just a word; the server decides which ones it
@@ -176,8 +222,8 @@ The method is the first word of the request line. It tells the server
 
 | Method | In plain words | Used for | Has a body? | Tried in |
 |---|---|---|---|---|
-| GET | "Give me information" | Read data only. Should NOT change anything. The most common method. | No | 001 - 016, 023 |
-| HEAD | "Give me info, but no body" | Like GET, but returns only status + headers. Check if something exists, its type, its date. Mostly used by systems. | No | 005 |
+| GET | "Give me information" | Read data only. Should NOT change anything. The most common method. | No | most files |
+| HEAD | "Give me info, but no body" | Like GET, but returns only status + headers. Check if something exists, its type, its date. Mostly used by systems. | No | 005, 033 |
 | POST | "I am sending you data" | Create something / send data to process. Usually changes something on the server. | Yes (often JSON) | 017 - 022 |
 | PUT | "Replace it with this" | Replace a WHOLE resource: delete the old version, store the new one. | Yes | 024 |
 | PATCH | "Change only this part" | Update PART of a resource. | Yes | 025 |
@@ -197,9 +243,9 @@ two comments). That's the real difference between POST and PUT.
 
 ---
 
-### Level 4 - Files and folders
+### Level 4 - Files, folders and the response
 
-#### 007_get_file_200
+#### 007_get_file_200_local
 - **Objective:** download an actual file: `/testfile.txt`.
 - **What happens:** `200 OK`, `Content-Type: text/plain`, a `Content-Length`
   header with the file size in bytes, then the file's text as the body.
@@ -207,18 +253,38 @@ two comments). That's the real difference between POST and PUT.
   (how many bytes follow). Remember `Content-Length`: it's the star of
   Level 8.
 
-#### 008_get_subFolderFile_200
+#### 008_get_subFolderFile_200_local
 - **Objective:** reach a file inside a sub-folder:
   `/testFolder/testSubfolderFile.txt`.
 - **What happens:** `200 OK` with the file content.
 - **Lesson:** the path works like folders on disk, separated by `/`.
 
-#### 009_get_doubleSlash_200
+#### 009_get_doubleSlash_200_local
 - **Objective:** see how the server handles a strange path: `//`.
 - **What happens:** `200 OK`, the root listing again: the server tidies the
   path up.
 - **Lesson:** servers *normalise* paths. Not every server does it the same
   way, which is why odd paths are a classic thing to test.
+
+#### 033_head_file_headers_200_local
+```
+HEAD /testfile.txt HTTP/1.1
+Host: localhost
+```
+- **Objective:** study the response headers on their own, without a body in
+  the way.
+- **What happens:** `200 OK` and only headers. Read each one:
+
+  | Header | Tells you |
+  |---|---|
+  | `Server` | which software answered (here: SimpleHTTP / Python) |
+  | `Date` | when the server answered |
+  | `Content-type` | what kind of file it is |
+  | `Content-Length` | its size in bytes |
+  | `Last-Modified` | when the file last changed |
+
+- **Lesson:** compare with 007 - identical headers, only the body is
+  missing. This is how programs check "has this file changed?" cheaply.
 
 ---
 
@@ -228,7 +294,7 @@ The test folder contains files with awkward names on purpose:
 `testfile with space.txt` and `test_file%special@parm german_ä.txt`.
 Background notes: `http_mini_server_root/Info_Encoding_Characters.txt`.
 
-#### 010_get_fileNameSpaces_400
+#### 010_get_fileNameSpaces_400_local
 ```
 GET /testfile with space.txt HTTP/1.1
 ```
@@ -238,13 +304,13 @@ GET /testfile with space.txt HTTP/1.1
   the name split it into five parts, and the server can't read it.
 - **Lesson:** some characters can't appear raw in a path.
 
-#### 011_get_fileNameQuotes_400
+#### 011_get_fileNameQuotes_400_local
 - **Objective:** try to "protect" the spaces with quotes.
 - **What happens:** still `400 Bad Request`.
 - **Lesson:** quotes mean nothing in HTTP; they are just more characters.
   There's a proper mechanism instead (next file).
 
-#### 012_get_fileNameUrlEncoding_200
+#### 012_get_fileNameUrlEncoding_200_local
 ```
 GET /testfile%20with%20space.txt HTTP/1.1
 ```
@@ -254,7 +320,7 @@ GET /testfile%20with%20space.txt HTTP/1.1
   replaced by `%` plus its code in hexadecimal. Space is code 32 = hex 20, so
   space becomes `%20`. The server decodes it back.
 
-#### 013_get_fileNameSpecialCharUrlEncoding_200
+#### 013_get_fileNameSpecialCharUrlEncoding_200_local
 ```
 GET /test_file%25special%40parm%20german_%C3%A4.txt HTTP/1.1
 ```
@@ -286,9 +352,6 @@ From here on: `telnet httpbin.org 80` (or `telnet example.org 80` for 016).
 - **What happens:** `HTTP/1.1 200 OK` and httpbin's HTML home page.
 - **Notice:** this server answers in HTTP/1.1, and sends more headers than
   the mini server (date, server type, security headers ...).
-- **Tip:** the request line in this file has trailing spaces after
-  `HTTP/1.1`. httpbin accepts them, but strict servers may reply 400. Keeping
-  request lines free of trailing spaces is safer.
 
 #### 015_get_httpbin_ip_200_telnet
 - **Objective:** ask for `/ip`, an *API endpoint* rather than a web page.
@@ -302,6 +365,55 @@ From here on: `telnet httpbin.org 80` (or `telnet example.org 80` for 016).
 - **What happens:** `200 OK` with a small HTML page ("Example Domain").
 - **Lesson:** the `Host` header must match the server you connected to.
   HTTP works the same everywhere.
+
+#### 034_get_httpbin_missingHost_400_telnet
+```
+GET /get HTTP/1.1
+Connection: close
+```
+- **Objective:** leave out the `Host` header on a real server.
+- **What happens:** `400 Bad Request`.
+- **Lesson:** in HTTP/1.1, `Host` is **required**. One machine can host many
+  websites, and `Host` says which one you mean.
+
+#### 035_get_root_missingHost_200_local
+- **Objective:** the same mistake on the local mini server.
+- **What happens:** `200 OK` - it answers anyway.
+- **Lesson:** not every server enforces every rule. A request that "works"
+  on one server can fail on another, so test against the real target.
+
+---
+
+### Level 6b - More status codes
+
+httpbin's `/status/NNN` answers with whatever code you ask for: a safe way to
+see codes you rarely meet on purpose.
+
+#### 036_get_httpbin_status201_201_telnet
+- **What happens:** `201 CREATED`.
+- **Lesson:** 201 is the typical answer to a successful POST that created
+  something new (an issue, an order).
+
+#### 037_get_httpbin_status204_204_telnet
+- **What happens:** `204 NO CONTENT` and no body at all.
+- **Lesson:** success doesn't always come with data. A DELETE often answers
+  204: "done, nothing more to say".
+
+#### 038_get_httpbin_status500_500_telnet
+- **What happens:** `500 INTERNAL SERVER ERROR`.
+- **Lesson:** the classic "the server broke" code. Your request was fine;
+  retrying later may help.
+
+#### 039_get_httpbin_redirectChain_302_telnet
+```
+GET /redirect/2 HTTP/1.1
+```
+- **Objective:** follow a chain of redirects by hand.
+- **What happens:** `302 FOUND` with a `Location` header pointing to the next
+  address. Send a new request to that address: another `302`. The next one
+  finally gives `200`.
+- **Lesson:** 301 = moved forever, 302 = "look over there for now". Browsers
+  and libraries follow these silently; here you see each hop.
 
 ---
 
@@ -334,8 +446,9 @@ hello world
   `application/json`, httpbin also *understands* it, and shows it parsed
   under `"json": {"city": "Switzerland", "name": "Amit"}`.
 - **Notice:** `Content-Length: 36` matches the JSON exactly (count it!).
-  This file has no `Connection: close`, so telnet stays connected after the
-  answer, until the server times out or you quit.
+- **Intentionally no `Connection: close`:** telnet stays connected after the
+  answer, until the server times out or you quit. That's HTTP/1.1
+  *keep-alive* - see 042 for what it's good for.
 
 ---
 
@@ -344,13 +457,13 @@ hello world
 The server reads the body **only by counting bytes**. These files break that
 count on purpose to see what happens.
 
-#### 019_post_httpbinText_shortLength200_telnet
+#### 019_post_httpbinText_shortLength_200_telnet
 - **Objective:** say `Content-Length: 8`, but send 11 bytes.
 - **What happens:** `200 OK`, but `"data": "hello wo"`. The server read
   exactly 8 bytes and ignored the rest (`rld`).
 - **Lesson:** the server trusts `Content-Length`, not what you actually sent.
 
-#### 020_post_httpbinText_LongLength_wait_telnet
+#### 020_post_httpbinText_longLength_timeout_telnet
 - **Objective:** say `Content-Length: 25`, but send only 11 bytes.
 - **What happens:** **nothing, for a while.** The server waits for the 14
   missing bytes. After a timeout it gives up or closes the connection.
@@ -377,7 +490,7 @@ count on purpose to see what happens.
 
 ### Level 9 - Headers: telling the server more
 
-#### 023_get_httpbin_multipleHeaders
+#### 023_get_httpbin_multipleHeaders_200_telnet
 ```
 GET /get HTTP/1.1
 Host: httpbin.org
@@ -394,6 +507,49 @@ Connection: close
   headers it received, including your `"User-Agent": "FileTest/1.0"`.
 - **Lesson:** headers are how client and server exchange extra information:
   what you want, who you are, what you send.
+
+---
+
+### Level 9b - Logging in and keeping the line open
+
+#### 040_get_httpbin_bearerMissing_401_telnet
+```
+GET /bearer HTTP/1.1
+```
+- **Objective:** ask for something protected, without proving who you are.
+- **What happens:** `401 UNAUTHORIZED`, usually with a `WWW-Authenticate`
+  header saying how to log in.
+- **Lesson:** 401 = "who are you?". (403 Forbidden would mean "I know who you
+  are, and the answer is no".)
+
+#### 041_get_httpbin_bearerToken_200_telnet
+```
+GET /bearer HTTP/1.1
+Host: httpbin.org
+Authorization: Bearer test123
+Connection: close
+```
+- **Objective:** send a token in the `Authorization` header.
+- **What happens:** `200 OK`, JSON `{"authenticated": true, "token": "test123"}`.
+- **Lesson:** this is exactly how APIs like GitHub work: your token travels
+  in `Authorization: Bearer <token>` with every request. Never put a real
+  token in a file you commit.
+
+#### 042_get_httpbin_keepAliveTwoRequests_200_telnet
+```
+GET /get?request=1 HTTP/1.1
+Host: httpbin.org
+
+GET /get?request=2 HTTP/1.1
+Host: httpbin.org
+Connection: close
+```
+- **Objective:** send two requests over **one** connection.
+- **What happens:** two complete responses, one after the other
+  (`"request": "1"`, then `"request": "2"`), then the server hangs up.
+- **Lesson:** this is *keep-alive*, what 018 left open. Opening a connection
+  takes time, so reusing it makes many small requests much faster.
+  `Connection: close` on the last request ends it cleanly.
 
 ---
 
@@ -437,38 +593,296 @@ echoes back what it received. Same idea as Level 7, new methods.
 
 ---
 
-## 4. What you can do now
+## 4. Bridge: from HTTP to HTTPS
 
-After these 28 experiments you have written every part of an HTTP request
+Almost every real API (GitHub included) only speaks **HTTPS**. telnet can't
+do that. This chapter shows that HTTPS is **the same HTTP you already know,
+just inside an encrypted tunnel** - so everything from chapter 3 still applies.
+
+### 4.1 The idea, in plain words
+
+Think of HTTP as a **postcard**: anyone handling it on the way can read it.
+HTTPS puts the very same postcard **inside a sealed envelope**:
+
+```
+HTTP:    your text  ------------------------------------>  server
+HTTPS:   your text  --> [ encrypt ] ====tunnel====> [ decrypt ] -->  server
+```
+
+- The envelope is called **TLS** (you'll also hear the old name *SSL*).
+- HTTPS uses port **443** instead of 80.
+- The text inside is **unchanged**: same request line, headers, empty line.
+
+### 4.2 The tool: openssl
+
+`openssl s_client` builds the encrypted tunnel for you. After that it
+behaves like telnet: what you paste goes through the tunnel. Commands are in
+`000_run_openssl_connection.txt`:
+
+```bash
+openssl s_client -connect example.org:443 -quiet -crlf
+```
+
+- `-connect host:443` - which server, on the HTTPS port
+- `-quiet` - hide the long certificate details
+- `-crlf` - send line endings the way HTTP officially wants them
+- quit with `Ctrl + C`
+
+### 4.3 Warm-up: an old friend, encrypted
+
+No new file needed. Connect to `example.org:443` as above, then paste
+**016_get_example_200_telnet** - exactly the same text you sent with telnet.
+
+- **What happens:** the same `200 OK` and "Example Domain" page as in 016.
+- **Lesson:** nothing in the request changed. Only the connection did.
+
+### 4.4 043_get_httpbin_https_200_openssl
+
+Connect with `openssl s_client -connect httpbin.org:443 -quiet -crlf` and
+paste the file (it's the same request as 023).
+
+- **What happens:** `200 OK`, and the JSON echo now says
+  `"url": "https://httpbin.org/get"` - with an **s**.
+- **Lesson:** the server knows the request came through the encrypted tunnel.
+
+### 4.5 044_get_githubApi_zen_200_openssl
+
+Connect with `openssl s_client -connect api.github.com:443 -quiet -crlf`.
+
+```
+GET /zen HTTP/1.1
+Host: api.github.com
+User-Agent: hello-http-learning (amitchaudhary82)
+Accept: application/vnd.github+json
+Connection: close
+```
+
+- **What happens:** `200 OK` and one short sentence of GitHub's design
+  philosophy (a different one each time).
+- **Lesson:** this is your first raw request to the **GitHub API** - the same
+  API the hello_HTTP repo uses with R. Try removing the `User-Agent` line:
+  GitHub refuses requests without one (`403`).
+
+### 4.6 What you now know
+
+| | telnet (chapter 3) | openssl (chapter 4) |
+|---|---|---|
+| Port | 80 | 443 |
+| Encrypted | no | yes |
+| Request text | you type it | you type it - identical |
+| Who builds the tunnel | nobody | openssl |
+
+Next step: tools that write the request text for you too.
+
+---
+
+## 5. The same examples three ways: telnet, curl, RStudio
+
+You've written every request by hand. Now let two tools write them, and
+compare with what you know.
+
+| Tool | You write | It writes for you |
+|---|---|---|
+| telnet / openssl | everything | nothing |
+| **curl** (Terminal) | URL + options | request line, Host, Content-Length, empty line, encryption |
+| **httr2** (RStudio) | R code | the same as curl (httr2 uses curl inside) |
+
+### 5.1 Easy start: one example, three ways
+
+Take **001** and the local server (start it as in chapter 2).
+
+**telnet** - you write everything:
+```bash
+telnet 127.0.0.1 8080
+# paste 001_get_root_200_local.http
+```
+
+**curl** - you give the URL, `-v` (verbose) shows what it sends:
+```bash
+curl -v http://127.0.0.1:8080/
+```
+In the output, lines starting with `>` are the **request** curl wrote,
+lines starting with `<` are the **response**. Compare the `>` lines with
+your file 001: same request line, same `Host` - plus `User-Agent` and
+`Accept`, which curl adds on its own.
+
+**RStudio (httr2)** - you write R:
+```r
+library(httr2)
+
+request("http://127.0.0.1:8080") |>
+  req_perform(verbosity = 1)      # -> request lines, <- response lines
+```
+`verbosity = 1` is the R version of `curl -v`. To see the request without
+sending it: `req_dry_run()`.
+
+### 5.2 Bonus: telnet inside RStudio
+
+R can open a raw connection too, so you can send your **unchanged** `.http`
+files from RStudio. Open RStudio in this repo folder, then:
+
+```r
+# Send a .http file as-is over a raw connection, like telnet.
+# Only for plain HTTP (_local and _telnet files), not HTTPS.
+send_http_file <- function(file, host, port = 80) {
+  request_text <- readChar(file, file.size(file), useBytes = TRUE)
+  request_text <- gsub("\r?\n", "\r\n", request_text)   # HTTP line endings
+  con <- socketConnection(host = host, port = port,
+                          open = "r+", blocking = TRUE, timeout = 10)
+  on.exit(close(con))
+  cat(request_text, file = con)
+  readLines(con, warn = FALSE)                          # the raw response
+}
+
+send_http_file("001_get_root_200_local.http", "127.0.0.1", 8080)
+send_http_file("015_get_httpbin_ip_200_telnet.http", "httpbin.org")
+```
+
+Files without `Connection: close` (018, 020) make it wait up to 10 seconds
+(the `timeout`), just like telnet hangs.
+
+### 5.3 All levels side by side
+
+Setup for the R lines:
+```r
+library(httr2)
+local <- request("http://127.0.0.1:8080")
+bin   <- request("https://httpbin.org")
+never_error <- function(resp) FALSE    # keep 4xx/5xx responses to inspect
+```
+Add `|> req_error(is_error = never_error) |> req_perform(verbosity = 1)` to
+any R line to send it and see the conversation.
+
+**Level 1-2: paths and redirects**
+
+| File | curl | httr2 |
+|---|---|---|
+| 001 | `curl -v http://127.0.0.1:8080/` | `local` |
+| 002 | `curl -v http://127.0.0.1:8080/testFolder` | `local \|> req_url_path_append("testFolder") \|> req_options(followlocation = FALSE)` |
+| 003 | `curl -v http://127.0.0.1:8080/testFolder/` | `local \|> req_url_path_append("testFolder/")` |
+| 004 | `curl -v http://127.0.0.1:8080/missingFile.txt` | `local \|> req_url_path_append("missingFile.txt")` |
+
+Note: curl and httr2 **follow redirects automatically**. 002 only shows the
+301 when you switch that off (`followlocation = FALSE`); with curl, *not*
+adding `-L` keeps the 301.
+
+**Level 2b: query strings** - the tools encode for you
+
+| File | curl | httr2 |
+|---|---|---|
+| 029 | `curl -G https://httpbin.org/get -d name=Amit -d city=Zurich` | `bin \|> req_url_path_append("get") \|> req_url_query(name = "Amit", city = "Zurich")` |
+| 030 | `curl -G https://httpbin.org/get --data-urlencode "city=St Gallen"` | `... req_url_query(city = "St Gallen")` |
+| 031 | `curl -G https://httpbin.org/get --data-urlencode "company=Johnson&Johnson"` | `... req_url_query(company = "Johnson&Johnson")` |
+| 032 | `curl -G https://httpbin.org/get --data-urlencode "r=a+b"` | `... req_url_query(r = "a+b")` |
+
+Exercise: run `req_dry_run()` and find how httr2 encoded the space, the `&`
+and the `+`. Compare with your files 030 - 032.
+
+**Level 3, 3b, 10: methods**
+
+| File | curl | httr2 |
+|---|---|---|
+| 005 / 033 | `curl -I http://127.0.0.1:8080/testfile.txt` | `local \|> req_url_path_append("testfile.txt") \|> req_method("HEAD")` |
+| 006 | `curl -v -X BADMETHOD http://127.0.0.1:8080/` | `local \|> req_method("BADMETHOD")` |
+| 024 | `curl -X PUT -H "Content-Type: application/json" -d '{"name":"Amit","city":"Zurich"}' https://httpbin.org/put` | `bin \|> req_url_path_append("put") \|> req_method("PUT") \|> req_body_json(list(name = "Amit", city = "Zurich"))` |
+| 025 | `curl -X PATCH -H "Content-Type: application/json" -d '{"city":"Bern"}' https://httpbin.org/patch` | `bin \|> req_url_path_append("patch") \|> req_method("PATCH") \|> req_body_json(list(city = "Bern"))` |
+| 026 | `curl -X DELETE https://httpbin.org/delete` | `bin \|> req_url_path_append("delete") \|> req_method("DELETE")` |
+| 027 | `curl -i -X OPTIONS https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_method("OPTIONS")`, then `resp_header(resp, "allow")` |
+| 028 | `curl -i https://httpbin.org/post` | `bin \|> req_url_path_append("post")` (GET is the default) |
+
+**Level 5: encoding in paths**
+
+| File | curl | httr2 |
+|---|---|---|
+| 010 / 012 | `curl -v "http://127.0.0.1:8080/testfile%20with%20space.txt"` | `local \|> req_url_path_append("testfile with space.txt")` |
+| 013 | `curl -v "http://127.0.0.1:8080/test_file%25special%40parm%20german_%C3%A4.txt"` | `local \|> req_url_path_append("test_file%special@parm german_ä.txt")` |
+
+Exercise: curl expects you to give it an already encoded URL. Check with
+`req_dry_run()` whether httr2 encodes the path for you - and if a character
+isn't encoded, use `curl::curl_escape("ä")` to see what it should be.
+
+**Level 6, 6b: servers, Host and status codes**
+
+| File | curl | httr2 |
+|---|---|---|
+| 014 | `curl -v http://httpbin.org/` | `request("http://httpbin.org")` |
+| 015 | `curl https://httpbin.org/ip` | `bin \|> req_url_path_append("ip")`, then `resp_body_json(resp)` |
+| 016 | `curl https://example.org/` | `request("https://example.org")` |
+| 034 | `curl -v -H "Host:" http://httpbin.org/get` | not possible: httr2 always sends `Host` |
+| 036 - 038 | `curl -i https://httpbin.org/status/201` (204, 500) | `bin \|> req_url_path_append("status", "201")` |
+| 039 | `curl -i https://httpbin.org/redirect/2` (add `-L` to follow) | `bin \|> req_url_path_append("redirect", "2") \|> req_options(followlocation = FALSE)` |
+
+In curl, `-H "Host:"` (empty value) *removes* a header curl would normally
+add - a handy trick to repeat 034.
+
+**Level 7-8: sending data**
+
+| File | curl | httr2 |
+|---|---|---|
+| 017 | `curl -H "Content-Type: text/plain" --data-binary "hello world" https://httpbin.org/post` | `bin \|> req_url_path_append("post") \|> req_body_raw("hello world", type = "text/plain")` |
+| 018 | `curl -H "Content-Type: application/json" -d '{"name":"Amit","city":"Switzerland"}' https://httpbin.org/post` | `bin \|> req_url_path_append("post") \|> req_body_json(list(name = "Amit", city = "Switzerland"))` |
+| 019 - 022 | (calculated for you) | (calculated for you) |
+
+This is the clearest difference between the worlds: curl and httr2
+**calculate `Content-Length` and insert the empty line themselves**, so the
+mistakes of Level 8 simply can't happen. Look for `Content-Length` in the
+`-v` / `verbosity = 1` output - you never typed it.
+
+**Level 9, 9b: headers, tokens, connections**
+
+| File | curl | httr2 |
+|---|---|---|
+| 023 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_headers(Accept = "application/json") \|> req_user_agent("FileTest/1.0")` |
+| 040 | `curl -i https://httpbin.org/bearer` | `bin \|> req_url_path_append("bearer")` |
+| 041 | `curl -H "Authorization: Bearer test123" https://httpbin.org/bearer` | `bin \|> req_url_path_append("bearer") \|> req_auth_bearer_token("test123")` |
+| 042 | `curl -v "https://httpbin.org/get?request=1" "https://httpbin.org/get?request=2"` | two `req_perform()` calls in a row |
+
+For 042, look for `Re-using existing connection` in curl's `-v` output: that
+is keep-alive, done for you.
+
+**Chapter 4: HTTPS**
+
+| File | curl | httr2 |
+|---|---|---|
+| 043 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_user_agent("FileTest/1.0")` |
+| 044 | `curl -A "hello-http-learning (amitchaudhary82)" https://api.github.com/zen` | `request("https://api.github.com") \|> req_url_path_append("zen") \|> req_user_agent("hello-http-learning (amitchaudhary82)")`, then `resp_body_string(resp)` |
+
+With curl and httr2 the encryption is invisible: just write `https://`.
+In `-v` output, the lines starting with `*` show the TLS tunnel being built
+(certificate, protocol) - the work openssl did in chapter 4.
+
+---
+
+## 6. What you can do now
+
+After these 44 experiments you have written every part of an HTTP request
 yourself:
 
 | Part | Learned in |
 |---|---|
 | Request line: method, path, version | 001, 005, 006 |
 | All methods: GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS | 3b, 024 - 028 |
-| Paths, folders, redirects | 002 - 004, 007 - 009 |
-| URL encoding | 010 - 013 |
-| Headers | 001, 014, 023 |
+| Paths, folders, redirects | 002 - 004, 007 - 009, 039 |
+| Query strings | 029 - 032 |
+| URL encoding | 010 - 013, 030 - 032 |
+| Headers, Host, tokens | 001, 014, 023, 034, 035, 040, 041 |
+| Response headers | 033 |
 | Body, Content-Type, Content-Length, the empty line | 017 - 022 |
-| Status codes 200, 301, 400, 404, 405, 501 | all |
+| Connections: close and keep-alive | 014, 018, 042 |
+| HTTPS | 043, 044 |
+| Status codes 200, 201, 204, 301, 302, 400, 401, 404, 405, 500, 501 | all |
 
-## 5. Next step: letting a library write the requests
+...and you can send the same requests with curl and with R's httr2, knowing
+exactly what they write for you. Further httr2 practice lives in the
+**hello_HTTP** repository.
 
-Tools like `curl` or R's **httr2** write exactly these text messages for
-you, and add a few things automatically: they calculate `Content-Length`,
-insert the empty line, URL-encode paths, follow redirects, and add
-encryption (HTTPS, port 443, which telnet can't do).
-
-Practice for that lives in the **hello_HTTP** repository. In httr2,
-`req_dry_run()` prints the raw request it would send: it looks just like the
-files in this repo.
-
-## 6. Other files
+## 7. Other files
 
 | File | Content |
 |---|---|
-| `000_Syntax_NNN_method_scenario_status.http` | file naming rule |
+| `000_Syntax_NNN_method_scenario_status.txt` | file naming rule |
 | `000_run_python_mini_server.txt` | command to start the local server |
 | `000_run_telnet_connection.txt` | command to connect to httpbin |
+| `000_run_openssl_connection.txt` | commands for HTTPS connections (chapter 4) |
 | `http_mini_server_root/` | files served by the local server (incl. tricky names) |
 | `http_mini_server_root/Info_Encoding_Characters.txt` | notes on URL structure and special characters |

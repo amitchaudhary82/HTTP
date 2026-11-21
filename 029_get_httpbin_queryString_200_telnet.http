@@ -1,0 +1,4 @@
+GET /get?name=Amit&city=Zurich HTTP/1.1
+Host: httpbin.org
+Connection: close
+
