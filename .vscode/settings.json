@@ -1,0 +1,6 @@
+{
+  // Pictures pasted into a Markdown file (Cmd+V) are saved in images/
+  "markdown.copyFiles.destination": {
+    "**/*.md": "images/"
+  }
+}

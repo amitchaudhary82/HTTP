@@ -165,6 +165,17 @@ Host: localhost
 ```
 <!-- /include -->
 
+
+
+**Server Connection Confirmed**
+```http
+MacBook-Pro-2:http_mini_server_root amitchaudhary$ python3 -m http.server 8080 --bind 127.0.0.1
+Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
+127.0.0.1 - - [21/Nov/2026 22:39:55] "GET / HTTP/1.1" 200 -
+```
+
+
+
 **Response**
 
 ```http
@@ -219,8 +230,8 @@ Connection closed by foreign host.
   bytes. `Connection closed by foreign host` = the server hung up after
   answering (HTTP/1.0 does that every time).
 
-<img width="3536" height="1378" alt="CleanShot 2026-11-21 at 21 23 43@2x" src="https://github.com/user-attachments/assets/1be62d6f-e9e0-4b0b-878b-8432cb987896" />
 
+**Sumulation via Browser**
 
 This can also be simulated in browser via using
 ```bash
@@ -250,6 +261,16 @@ GET /testFolder HTTP/1.1
 Host: localhost
 ```
 <!-- /include -->
+
+
+**Server Connection Confirmed**
+```http
+MacBook-Pro-2:http_mini_server_root amitchaudhary$ python3 -m http.server 8080 --bind 127.0.0.1
+Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
+127.0.0.1 - - [21/Nov/2026 22:39:55] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [21/Nov/2026 22:44:27] "GET /testFolder HTTP/1.1" 301 -
+```
+
 
 **Response**
 
