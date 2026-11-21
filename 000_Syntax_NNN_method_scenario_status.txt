@@ -13,5 +13,8 @@ status: expected status like 200, 403, 500
 
 
 
-server suffix: _local (Python mini server), _telnet (internet, port 80), _openssl (HTTPS, port 443)
-Example: 001_get_root_200_local.http
+tool + server suffix:
+  _telnet_local     telnet to the local Python mini server  (folder 1_telnet)
+  _telnet_internet  telnet to an internet server, port 80   (folder 1_telnet)
+  _openssl          openssl to an HTTPS server, port 443     (folder 2_openssl)
+Example: 001_get_root_200_telnet_local.http
