@@ -256,7 +256,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testFolder HTTP/1.1
 Host: localhost
 ```
@@ -264,7 +264,7 @@ Host: localhost
 
 
 **Server Connection Confirmed**
-```http
+```bash
 MacBook-Pro-2:http_mini_server_root amitchaudhary$ python3 -m http.server 8080 --bind 127.0.0.1
 Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
 127.0.0.1 - - [21/Nov/2026 22:39:55] "GET / HTTP/1.1" 200 -
@@ -274,7 +274,7 @@ Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
 Trying 127.0.0.1...
 Connected to localhost.
@@ -313,7 +313,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testFolder/ HTTP/1.1
 Host: localhost
 ```
@@ -321,7 +321,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
 Trying 127.0.0.1...
 Connected to localhost.
@@ -384,7 +384,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /missingFile.txt HTTP/1.1
 Host: localhost
 ```
@@ -392,7 +392,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet 127.0.0.1 8080
 Trying 127.0.0.1...
 Connected to localhost.
@@ -456,7 +456,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get?name=Amit&city=Zurich HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -466,7 +466,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
 Trying 54.172.45.38...
 Connected to httpbin.org.
@@ -517,7 +517,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get?city=St%20Gallen HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -527,7 +527,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
 Trying 54.172.45.38...
 Connected to httpbin.org.
@@ -576,7 +576,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get?company=Johnson%26Johnson&country=US HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -586,7 +586,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
 Trying 3.221.253.123...
 Connected to httpbin.org.
@@ -637,7 +637,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get?q=a+b&r=a%2Bb HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -647,7 +647,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 MacBook-Pro-2:HTTP amitchaudhary$ telnet httpbin.org 80
 Trying 3.221.253.123...
 Connected to httpbin.org.
@@ -701,7 +701,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 HEAD / HTTP/1.1
 Host: localhost
 ```
@@ -709,7 +709,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -729,7 +729,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 BADMETHOD / HTTP/1.1
 Host: localhost
 ```
@@ -737,7 +737,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -790,7 +790,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testfile.txt HTTP/1.1
 Host: localhost
 ```
@@ -798,7 +798,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
