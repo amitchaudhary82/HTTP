@@ -1,24 +1,22 @@
-NNN_method_scenario_status.http
-Recommended naming rules
-Use always: Syntax
-NNN : 3 digits numbering
-Method: lowercase method name (get, put, post)
-underscore _
-scenario: scenario name covering everything rest as free text
-status: expected status like 200, 403, 500
-.http : extension
+ECNN_method_scenario_status_server.http
 
+Naming rules for The Message files (folder messages/)
 
+ECNN      Experiment ID: E + chapter + number (E301 = chapter 3, first experiment)
+          The E keeps IDs apart from HTTP status codes: E404 = experiment, 404 = Not Found
+method    lowercase method name (get, head, post, put, patch, delete, options)
+scenario  free text describing the experiment (camelCase, no spaces)
+status    expected status like 200, 404, 500 (or a word such as timeout)
+server    which server The Message goes to - not which Carrier sends it:
+            _local     the local Python mini server (127.0.0.1, port 8080)
+            _internet  an internet server, plain HTTP (port 80)
+            _https     an internet server, HTTPS (port 443)
+.http     extension
 
+Example: E304_get_missingFile_404_local.http
 
+Any Carrier (telnet, nc, ncat, openssl) can send any Message; connect
+commands are in carriers/.
 
-
-tool + server suffix:
-  _telnet_local     telnet to the local Python mini server  (folder telnet)
-  _telnet_internet  telnet to an internet server, port 80   (folder telnet)
-  _openssl          openssl to an HTTPS server, port 443     (folder openssl)
-Example: E301_get_root_200_telnet_local.http
-
-ID: ECNN = E for Experiment + chapter + number (E301 = chapter 3, first experiment)
-    The E keeps IDs apart from HTTP status codes: E404 = experiment, 404 = Not Found
-Pictures: images/ECNN_what.png (e.g. images/E301_browser.png); chapter pictures: images/chN_what.png
+Pictures: images/ECNN_what.png (e.g. images/E301_browser.png)
+          chapter pictures: images/chN_what.png

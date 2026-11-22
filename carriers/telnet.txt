@@ -1,0 +1,12 @@
+# telnet commands for the plain-HTTP request files in ../messages/
+# (files ending _local or _internet). Not for HTTPS (_https files).
+
+# Local server (files ending _local); start it first, see 000_run_python_mini_server.txt
+telnet 127.0.0.1 8080
+
+# Internet servers (files ending _internet); use the host from the Host: line
+telnet httpbin.org 80
+telnet example.org 80
+
+# Then paste the request from the matching file in ../messages/.
+# Quit a hanging connection: Ctrl + ] then type quit

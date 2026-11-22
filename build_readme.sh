@@ -4,7 +4,7 @@
 # =============================================================================
 #
 # WHY
-#   The files in telnet/ and openssl/ are the GOLDEN SOURCE: the versions
+#   The Message files in messages/ are the GOLDEN SOURCE: the versions
 #   that actually ran. The README shows them as code snippets so nobody has
 #   to open the files. This script copies them in, so the README can never
 #   drift away from the files.
@@ -12,16 +12,16 @@
 # HOW IT WORKS
 #   In README.md, each snippet sits between two markers:
 #
-#     <!-- include: telnet/E301_get_root_200_telnet_local.http -->
+#     <!-- include: messages/E301_get_root_200_local.http -->
 #     (everything here is replaced by the current file content)
 #     <!-- /include -->
 #
 #   The script reads README.md line by line (awk), and between each pair of
 #   markers writes:
-#     **Connect**  the command to open the connection, worked out from the
-#                  file name suffix (_telnet_local, _telnet_internet,
-#                  _openssl) and the Host: line of the request
-#     **Request**  the file content as a code block
+#     **The Carrier**  the command to open the connection (telnet, or openssl
+#                      for HTTPS), worked out from the file name suffix
+#                      (_local, _internet, _https) and the Host: line
+#     **The Message**  the file content as a code block
 #   Never edit a snippet in the README: edit the file, then run this script.
 #
 # HOW TO USE (from the repo folder, after changing any request file)
@@ -63,12 +63,12 @@ awk '
     } else {
       # the connect command follows from the file name suffix (+ Host header)
       if (host == "") host = "httpbin.org"          # e.g. 034: no Host on purpose
-      if (path ~ /_telnet_local\.http$/)         cmd = "telnet 127.0.0.1 8080"
-      else if (path ~ /_telnet_internet\.http$/) cmd = "telnet " host " 80"
-      else if (path ~ /_openssl\.http$/)         cmd = "openssl s_client -connect " host ":443 -quiet -crlf"
+      if (path ~ /_local\.http$/)         cmd = "telnet 127.0.0.1 8080"
+      else if (path ~ /_internet\.http$/) cmd = "telnet " host " 80"
+      else if (path ~ /_https\.http$/)    cmd = "openssl s_client -connect " host ":443 -quiet -crlf"
       else                                       cmd = "(unknown suffix: see file naming rule)"
 
-      print "**Connect**"
+      print "**The Carrier**"
       print ""
       print "```bash"
       print cmd
@@ -76,7 +76,7 @@ awk '
       print ""
       print "<br>"
       print ""
-      print "**Request**"
+      print "**The Message**"
       print ""
       print "```bash"
       for (i = 1; i <= n; i++) print req[i]
@@ -105,6 +105,9 @@ grep -c "^<!-- include: " "${README}" | sed "s/^/snippets: /"
 #   The table of contents is written between <!-- toc --> and <!-- /toc -->,
 #   with links GitHub understands (lower case, no punctuation, - for spaces).
 #   Lines inside ``` code blocks are ignored (# there is a comment, not a heading).
+#   Under every chapter heading a navigation line is (re)written:
+#     > Chapter navigation: [Previous: Chapter 2](#...)
+#     > · [Next: Chapter 4](#...)
 
 awk '
   function anchor(t,   a) {
@@ -134,12 +137,28 @@ awk '
       n++
       level[n] = ($0 ~ /^### /) ? 2 : 1
       title[n] = h; sub(/^#+ /, "", title[n])
+      if (level[n] == 1) { nch++; chtitle[nch] = title[n] }
       next
     }
     next
   }
   # ---- second read: write the file with numbered headings and a fresh toc
-  FNR == 1 { ch = 0; sec = 0; fence = 0 }
+  FNR == 1 { ch = 0; sec = 0; fence = 0; afterhead = 0 }
+  # ---- after a chapter heading: drop old blank/navigation lines, write fresh ones
+  afterhead {
+    if ($0 == "" || $0 ~ /^> Chapter navigation:/ || $0 ~ /^> · \[/) next
+    print ""
+    if (ch > 1 && ch < nch) {
+      print "> Chapter navigation: [Previous: Chapter " ch - 1 "](#" anchor(chtitle[ch - 1]) ")"
+      print "> · [Next: Chapter " ch + 1 "](#" anchor(chtitle[ch + 1]) ")"
+    } else if (ch == 1) {
+      print "> Chapter navigation: [Next: Chapter 2](#" anchor(chtitle[2]) ")"
+    } else {
+      print "> Chapter navigation: [Previous: Chapter " ch - 1 "](#" anchor(chtitle[ch - 1]) ")"
+    }
+    print ""
+    afterhead = 0
+  }
   /^<!-- toc -->$/ {
     print
     print "**Contents**"
@@ -153,7 +172,8 @@ awk '
   /^<!-- \/toc -->$/ { skip = 0; print; next }
   skip { next }
   /^```/ { fence = !fence; print; next }
-  !fence && (/^## / || /^### /) { print renumber($0); next }
+  !fence && /^## /  { print renumber($0); afterhead = 1; next }
+  !fence && /^### / { print renumber($0); next }
   { print }
 ' "${README}" "${README}" > "${TMP}"
 

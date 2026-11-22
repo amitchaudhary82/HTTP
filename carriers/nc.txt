@@ -1,6 +1,6 @@
 # macOS netcat (nc) commands for the plain-HTTP request examples.
-# The request files are shared with the Telnet examples in ../telnet/.
-# Do not use these commands for HTTPS; use ../openssl/ for TLS examples.
+# The request files are shared by all carriers, in ../messages/.
+# Do not use these commands for HTTPS (files ending _https); use carriers/openssl.txt or ncat --ssl.
 # Other nc implementations use different options; check `man nc` first.
 
 # Start the local server from the repository root in another terminal:
@@ -14,9 +14,12 @@ nc -c 127.0.0.1 8080
 nc -c httpbin.org 80
 nc -c example.org 80
 
-# Then type or paste the request from the matching file in ../telnet/.
+# Then type or paste the request from the matching file in ../messages/.
 # For example, after connecting locally, send the contents of:
-#   ../telnet/E301_get_root_200_telnet_local.http
+#   ../messages/E301_get_root_200_local.http
+#
+# Or send the file directly, byte for byte, from the repository root:
+#   nc -c 127.0.0.1 8080 < messages/E301_get_root_200_local.http
 # Press Enter on an empty line after the headers to finish the request.
 #
 # On macOS, nc -c sends CRLF line endings. Other nc implementations may use a

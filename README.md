@@ -12,15 +12,15 @@ step builds on the one before. Work through them in order.
 **Required**
 
 - **Terminal**: Terminal.app on macOS, or an equivalent terminal on Linux or Windows
-- **Python 3**: to serve the local files in Chapters 2 and 3
-- **Telnet or netcat (`nc`)**: to send raw HTTP requests in Chapters 2 through 6
-- **OpenSSL**: to send raw HTTPS requests in Chapter 7
+- **Python 3**: to serve the local files in Chapters 2, 3 and 6
+- **Telnet, nc or ncat**: The Carrier for the raw HTTP concepts in Chapters 3 to 5 and 7
+- **OpenSSL** (or `ncat --ssl`): The Carrier for HTTPS in Chapter 8
 
 **Optional**
 
-- **curl**: for the command-line comparisons in Chapter 8
-- **R and RStudio**: for the `httr2` comparisons in Chapter 8
-- **Internet access**: for the real-server experiments in Chapters 4 through 8
+- **curl**: for the practice chapters 6 and 9
+- **R and RStudio**: for the practice chapters 6 and 9 (`httr2`)
+- **Internet access**: for the real-server experiments in Chapters 4 to 9
 
 Check the main tools from a terminal:
 
@@ -58,7 +58,7 @@ nc -c 127.0.0.1 8080
 
 Paste this request, including the empty line after `Host: localhost`:
 
-```http
+```bash
 GET / HTTP/1.1
 Host: localhost
 
@@ -75,33 +75,38 @@ git clone https://github.com/amitchaudhary82/http.git
 cd http
 ```
 
-| Chapter | What you learn | Tool | Folder |
-|---|---|---|---|
-| 1 - 2 | What HTTP is, how to set up | - | - |
-| 3 | Experiments on your own Mac (local server) | telnet or nc | `telnet/` |
-| 4 | Simple GET experiments on the internet | telnet or nc | `telnet/` |
-| 5 | Sending data: POST and other methods | telnet or nc | `telnet/` |
-| 6 | Adding authentication | telnet or nc | `telnet/` |
-| 7 | Bridge: the same requests, encrypted (HTTPS) | openssl | `openssl/` |
-| 8 | The same examples three ways | curl, RStudio (httr2) | `curl/`, `rstudio/` |
+| Part | Chapter | What you learn | Carrier or tool | Messages |
+|---|---|---|---|---|
+| | 1 - 2 | What HTTP is; setup: The Message and The Carrier | - | - |
+| **1** | 3 | Concepts: the local server | telnet, nc or ncat | E301 - E315 |
+| **1** | 4 | Concepts: simple GET on the internet | telnet, nc or ncat | E401 - E414 |
+| **1** | 5 | Concepts: sending data (POST and other methods) | telnet, nc or ncat | E501 - E511 |
+| **1** | 6 | Practice: the same Messages with tools | RStudio (httr2), curl | E3xx - E5xx |
+| **2** | 7 | Concepts: authentication | telnet, nc or ncat | E701 - E702 |
+| **2** | 8 | Concepts: HTTPS | openssl or ncat --ssl | E801 - E802 |
+| **2** | 9 | Practice: authentication and HTTPS with tools | RStudio (httr2), curl, openssl | E7xx - E8xx |
+
+**Concepts** chapters use only a raw Carrier, so you see every byte.
+**Practice** chapters send the same Message files with tools.
 
 **Experiment IDs follow the chapters:** `ECNN` = **E**xperiment + chapter +
 number, e.g. `E301` is the first experiment of chapter 3, `E502` the second of
 chapter 5. The `E` keeps them apart from HTTP status codes: `E404` is an
 experiment, `404` is "Not Found". The same ID appears in the README, in the
-request file `telnet/E301_...http`, as section `# E301` in the curl and
+Message file `messages/E301_...http`, as section `# E301` in the curl and
 RStudio scripts, and in pictures: `images/E301_browser.png`.
 
 ```
 HTTP/
   README.md                                   this guide
   000_Syntax_NNN_method_scenario_status.txt   file naming rule
+  000_run_python_mini_server.txt              command to start the local server
   build_readme.sh                             refreshes snippets, numbers and contents
-  telnet/          raw requests + start commands         (chapters 3 - 6)
-  NC/              netcat connection commands, reusing telnet/ requests
-  openssl/         raw HTTPS requests + connect commands  (chapter 7)
-  curl/            curl_examples.sh                      (chapter 8)
-  rstudio/         httr2_examples.R, send_http_file.R    (chapter 8)
+  validate_readme.py                          checks includes, IDs and image links
+  messages/        The Message: all 44 HTTP requests (Exxx_...http)
+  carriers/        The Carrier: how to connect (telnet, nc, ncat, openssl)
+  curl/            http_to_curl.sh + practice scripts (chapters 6, 9)
+  rstudio/         http_helpers.R + practice scripts  (chapters 6, 9)
   images/          screenshots, named after the experiment (E301_browser.png)
   http_mini_server_root/   files served by the local server
 ```
@@ -116,40 +121,49 @@ HTTP/
 - [Chapter 2: Setup](#chapter-2-setup)
   - [2.1 The servers we talk to](#21-the-servers-we-talk-to)
   - [2.2 Start the local server](#22-start-the-local-server)
-  - [2.3 Connect with Telnet to your local server](#23-connect-with-telnet-to-your-local-server)
-- [Chapter 3: The Experiments, Local Telnet](#chapter-3-the-experiments-local-telnet)
+  - [2.3 The Message and the Carrier](#23-the-message-and-the-carrier)
+  - [2.4 The Carrier: telnet](#24-the-carrier-telnet)
+  - [2.5 The Carrier: nc (netcat)](#25-the-carrier-nc-netcat)
+  - [2.6 The Carrier: ncat (Nmap)](#26-the-carrier-ncat-nmap)
+  - [2.7 Tips for every Carrier](#27-tips-for-every-carrier)
+- [Chapter 3: Concepts: The Local Server](#chapter-3-concepts-the-local-server)
   - [3.1 The first request](#31-the-first-request)
   - [3.2 Paths: asking for different things](#32-paths-asking-for-different-things)
   - [3.3 Methods: what you want to do](#33-methods-what-you-want-to-do)
   - [3.4 Files, folders and the response](#34-files-folders-and-the-response)
   - [3.5 Special characters and URL encoding](#35-special-characters-and-url-encoding)
   - [3.6 A rule the local server ignores](#36-a-rule-the-local-server-ignores)
-- [Chapter 4: The Simple GET Experiments, Internet](#chapter-4-the-simple-get-experiments-internet)
+- [Chapter 4: Concepts: Simple GET on the Internet](#chapter-4-concepts-simple-get-on-the-internet)
   - [4.1 Real servers on the internet](#41-real-servers-on-the-internet)
   - [4.2 Query strings: asking with options](#42-query-strings-asking-with-options)
   - [4.3 Headers: telling the server more](#43-headers-telling-the-server-more)
   - [4.4 More status codes](#44-more-status-codes)
   - [4.5 Keeping the line open](#45-keeping-the-line-open)
-- [Chapter 5: The Simple POST Experiments, Internet](#chapter-5-the-simple-post-experiments-internet)
+- [Chapter 5: Concepts: Sending Data](#chapter-5-concepts-sending-data)
   - [5.1 Sending data (POST)](#51-sending-data-post)
   - [5.2 What if Content-Length is wrong?](#52-what-if-content-length-is-wrong)
   - [5.3 The other methods](#53-the-other-methods)
-- [Chapter 6: Adding Authentication](#chapter-6-adding-authentication)
-  - [6.1 Logging in with a token](#61-logging-in-with-a-token)
-- [Chapter 7: Bridge: from HTTP to HTTPS](#chapter-7-bridge-from-http-to-https)
-  - [7.1 The idea, in plain words](#71-the-idea-in-plain-words)
-  - [7.2 The tool: openssl](#72-the-tool-openssl)
-  - [7.3 Warm-up: an old friend, encrypted](#73-warm-up-an-old-friend-encrypted)
-  - [7.4 E701_get_httpbin_https_200_openssl](#74-e701_get_httpbin_https_200_openssl)
-  - [7.5 E702_get_githubApi_zen_200_openssl](#75-e702_get_githubapi_zen_200_openssl)
-  - [7.6 What you now know](#76-what-you-now-know)
-- [Chapter 8: The same examples three ways: telnet, curl, RStudio](#chapter-8-the-same-examples-three-ways-telnet-curl-rstudio)
-  - [8.1 Easy start: one example, three ways](#81-easy-start-one-example-three-ways)
-  - [8.2 Bonus: telnet inside RStudio](#82-bonus-telnet-inside-rstudio)
-  - [8.3 All examples side by side](#83-all-examples-side-by-side)
-- [Chapter 9: What you can do now](#chapter-9-what-you-can-do-now)
-- [Chapter 10: Other files](#chapter-10-other-files)
-  - [10.1 Maintaining this README](#101-maintaining-this-readme)
+- [Chapter 6: Practice: Part 1 with Tools](#chapter-6-practice-part-1-with-tools)
+  - [6.1 With RStudio (httr2)](#61-with-rstudio-httr2)
+  - [6.2 With curl](#62-with-curl)
+  - [6.3 What the tools change](#63-what-the-tools-change)
+- [Chapter 7: Concepts: Authentication](#chapter-7-concepts-authentication)
+  - [7.1 Logging in with a token](#71-logging-in-with-a-token)
+- [Chapter 8: Concepts: HTTPS](#chapter-8-concepts-https)
+  - [8.1 The idea, in plain words](#81-the-idea-in-plain-words)
+  - [8.2 The tool: openssl](#82-the-tool-openssl)
+  - [8.3 Warm-up: an old friend, encrypted](#83-warm-up-an-old-friend-encrypted)
+  - [8.4 E801_get_httpbin_200_https](#84-e801_get_httpbin_200_https)
+  - [8.5 E802_get_githubApi_zen_200_https](#85-e802_get_githubapi_zen_200_https)
+  - [8.6 What you now know](#86-what-you-now-know)
+- [Chapter 9: Practice: Part 2 with Tools](#chapter-9-practice-part-2-with-tools)
+  - [9.1 With RStudio (httr2)](#91-with-rstudio-httr2)
+  - [9.2 With curl](#92-with-curl)
+  - [9.3 openssl for troubleshooting](#93-openssl-for-troubleshooting)
+  - [9.4 What the tools change](#94-what-the-tools-change)
+- [Chapter 10: What you can do now](#chapter-10-what-you-can-do-now)
+- [Chapter 11: Other files](#chapter-11-other-files)
+  - [11.1 Maintaining this README](#111-maintaining-this-readme)
 <!-- /toc -->
 
 <br>
@@ -206,12 +220,12 @@ thing at a time.
 ## Chapter 2: Setup
 
 > Chapter navigation: [Previous: Chapter 1](#chapter-1-the-big-idea-in-60-seconds)
-> · [Next: Chapter 3](#chapter-3-the-experiments-local-telnet)
+> · [Next: Chapter 3](#chapter-3-concepts-the-local-server)
 
 **Setup checklist**
 
 - [ ] Python 3 is installed and available as `python3`
-- [ ] Telnet is installed
+- [ ] A carrier is installed: telnet, nc or ncat (see 2.3)
 - [ ] This repository is the current working directory
 - [ ] Port `8080` is available
 - [ ] The server terminal remains open while you complete Chapters 2 and 3
@@ -220,17 +234,17 @@ thing at a time.
 
 | Server | What | File suffix | Folder |
 |---|---|---|---|
-| Local mini server | Python's built-in web server, on your own Mac | `_telnet_local` | `telnet/` |
-| httpbin.org / example.org | Real test servers on the internet, plain HTTP | `_telnet_internet` | `telnet/` |
-| httpbin.org / api.github.com | The same, encrypted (HTTPS) - chapter 7 | `_openssl` | `openssl/` |
+| Local mini server | Python's built-in web server, on your own Mac | `_local` | `messages/` |
+| httpbin.org / example.org | Real test servers on the internet, plain HTTP | `_internet` | `messages/` |
+| httpbin.org / api.github.com | The same, encrypted (HTTPS) - chapter 8 | `_https` | `messages/` |
 
-The suffix names the **tool and the server**, so a file still tells you how
-to send it even when it's copied somewhere else.
+The suffix names the **server**, not the tool: any Carrier can send any
+Message to the server its suffix names.
 
 **httpbin.org** is a test server made for learning: it replies with a
 description of the request it received, so you can see exactly what you sent.
 
-> **Internet note:** Chapters 4 through 8 contain experiments against live
+> **Internet note:** Chapters 4 to 9 contain experiments against live
 > public servers. Internet access is required, and a remote service may
 > temporarily change its response or become unavailable.
 
@@ -254,64 +268,135 @@ Additional Info:
 - leave this Terminal open; it shows every request it receives
 
 
-### 2.3 Connect with Telnet to your local server
+### 2.3 The Message and the Carrier
 
-Open a **second** Terminal and connect to the server
+Every experiment in this repository is an HTTP request - **The Message**:
+plain text with a request line, headers, an empty line and sometimes a body.
+The files in `messages/` (`E301_...http`, `E302_...http` ...) contain exactly
+that text and nothing else.
+
+To reach the server, the text needs **The Carrier**: a program that opens a
+connection to a host and port and passes your text through, unchanged.
 
 ```bash
-telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
-
+The Message   (messages/Exxx files)  what you say
+The Carrier   (telnet, nc, ncat)     how it travels
+The Server    (local or internet)    who answers
 ```
 
-On macOS, netcat is another option; use `nc -c` to send CRLF line endings:
+The Message is the same whichever Carrier you use. Only the **connect line**
+changes:
+
+| The Carrier | Connect (local server) | Line endings | Included with |
+|---|---|---|---|
+| telnet | `telnet 127.0.0.1 8080` | CR LF automatically | Linux; install on macOS and Windows |
+| nc (netcat) | `nc -c 127.0.0.1 8080` | CR LF with `-c` (macOS) or `-C` (Linux) | macOS, most Linux |
+| ncat (Nmap) | `ncat -C 127.0.0.1 8080` | CR LF with `-C` | install on all systems |
+
+The concept chapters use **telnet** (and openssl for HTTPS in chapter 8). Pick any Carrier below
+that works on your machine; The Message stays the same. Connect commands for
+each Carrier are in `carriers/`.
+
+### 2.4 The Carrier: telnet
+
+**Install** (if `telnet` is not found):
+- macOS: `brew install telnet` (no longer part of macOS)
+- Windows: *Turn Windows features on or off* > **Telnet Client** (needs admin rights)
+- Linux: `sudo apt install telnet`
+
+**Connect**, in a second terminal while the local server is running:
 
 ```bash
-nc -c 127.0.0.1 8080
+telnet 127.0.0.1 8080       # local server
+telnet httpbin.org 80       # internet server (chapters 4, 5 and 7)
 ```
-
-In the usual interactive setup, pressing Enter in Telnet or macOS `nc -c`
-sends `0D 0A` (CR LF). The blank line that ends the headers is a second
-`0D 0A`, so the request ends with `0D 0A 0D 0A`. Without `-c`, macOS `nc`
-usually sends only `0A` for Enter.
 
 ![ch2_telnet_connection_ok](images/ch2_telnet_connection_ok.png)
 
+Then paste The Message of the experiment. The response appears below it.
 
-At this point you are connected to the server. Paste the request for the
-experiment you are working through; the server's response will appear below
-it.
-<br>
-<br>
-<br>
+- Enter sends CR LF (`0D 0A`) automatically. The empty line that ends the
+  headers is a second `0D 0A`, so a request ends with `0D 0A 0D 0A`.
+- Quit a hanging connection: `Ctrl + ]`, then type `quit`.
 
-All requests are stored as files in `telnet/` and `openssl/`.
-To connect with netcat instead of Telnet, use the macOS commands in
-`NC/000_run_nc_connection.txt`; the raw HTTP request files in `telnet/` are
-the same.
+### 2.5 The Carrier: nc (netcat)
 
-Then paste the request shown with each experiment. The response appears below.
+**Install**: nothing to do on macOS and most Linux systems. Not available on
+Windows (use ncat instead).
 
-Tips:
-- The **empty line at the end is part of the request**. Without it the server
-  keeps waiting for more headers.
+**Connect** (macOS):
+
+```bash
+nc -c 127.0.0.1 8080        # local server
+nc -c httpbin.org 80        # internet server
+```
+
+**Send a request file directly**, byte for byte, without copy-paste:
+
+```bash
+nc -c 127.0.0.1 8080 < messages/E301_get_root_200_local.http
+```
+
+- `-c` turns every line ending into CR LF, as HTTP expects. On Linux the
+  option is a capital `-C`; check `man nc`.
+- Without `-c`, nc sends only `0A` (LF). Most servers accept that, strict
+  ones may not.
+- Quit: `Ctrl + C`.
+- More commands: `carriers/nc.txt`.
+
+### 2.6 The Carrier: ncat (Nmap)
+
+ncat is a modern netcat from the Nmap project. It works the same on macOS,
+Windows and Linux, and can also do HTTPS.
+
+**Install**:
+- macOS: `brew install nmap` (ncat is included)
+- Windows: the Nmap installer from nmap.org (includes ncat)
+- Linux: `sudo apt install ncat`
+
+**Connect**:
+
+```bash
+ncat -C 127.0.0.1 8080      # local server
+ncat -C httpbin.org 80      # internet server
+ncat -C --ssl httpbin.org 443   # HTTPS, like openssl in chapter 8
+```
+
+**Send a request file directly**:
+
+```bash
+ncat -C 127.0.0.1 8080 < messages/E301_get_root_200_local.http
+```
+
+- `-C` (or `--crlf`) turns line endings into CR LF.
+- Quit: `Ctrl + C`.
+
+### 2.7 Tips for every Carrier
+
+- The **empty line at the end is part of the request**. Without it the
+  server keeps waiting for more headers.
 - The local server answers once and closes the connection. Connect again for
-  the next file.
-- To quit a hanging telnet: press `Ctrl + ]`, then type `quit`.
-- The files contain **only** the request: no comments, so copy-paste is
-  always safe. All explanations live in this README.
-- With netcat, press `Ctrl+C` to close the connection if the server keeps it
-  open. Other operating systems may use a different CRLF option; check `man nc`.
-
+  the next experiment.
+- The request files contain **only** the request, no comments, so copying or
+  sending a whole file is always safe. All explanations live in this README.
+- All Messages are stored as files in `messages/`; connect commands for
+  every Carrier are in `carriers/`.
 
 <br>
 <br>
 <br>
 
 
-## Chapter 3: The Experiments, Local Telnet
+**Part 1 - The basics, without authentication** (chapters 3 to 6)
+
+## Chapter 3: Concepts: The Local Server
 
 > Chapter navigation: [Previous: Chapter 2](#chapter-2-setup)
-> · [Next: Chapter 4](#chapter-4-the-simple-get-experiments-internet)
+> · [Next: Chapter 4](#chapter-4-concepts-simple-get-on-the-internet)
+
+**The Carrier:** the exercises use **telnet**. Every Message is plain HTTP,
+so any Carrier from chapter 2 works the same; only the connect line changes
+(see 2.3).
 
 For this experiment we have setup folder and files with simple and special characters and we will try few combinations which will return the file names back
 
@@ -323,10 +408,10 @@ For this experiment we have setup folder and files with simple and special chara
 
 ### 3.1 The first request
 
-#### E301_get_root_200_telnet_local
+#### E301_get_root_200_local
 
-<!-- include: telnet/E301_get_root_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E301_get_root_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -334,7 +419,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET / HTTP/1.1
@@ -431,10 +516,10 @@ http://localhost:8080
 
 ### 3.2 Paths: asking for different things
 
-#### E302_get_foldernoSlash_301_telnet_local
+#### E302_get_foldernoSlash_301_local
 
-<!-- include: telnet/E302_get_foldernoSlash_301_telnet_local.http -->
-**Connect**
+<!-- include: messages/E302_get_foldernoSlash_301_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -442,7 +527,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testFolder HTTP/1.1
@@ -493,10 +578,10 @@ Connection closed by foreign host.
 <br>
 <br>
 
-#### E303_get_folder_slash_200_telnet_local
+#### E303_get_folder_slash_200_local
 
-<!-- include: telnet/E303_get_folder_slash_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E303_get_folder_slash_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -504,7 +589,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testFolder/ HTTP/1.1
@@ -571,10 +656,10 @@ localhost:8080/testFolder/
 <br>
 <br>
 
-#### E304_get_missingFile_404_telnet_local
+#### E304_get_missingFile_404_local
 
-<!-- include: telnet/E304_get_missingFile_404_telnet_local.http -->
-**Connect**
+<!-- include: messages/E304_get_missingFile_404_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -582,7 +667,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /missingFile.txt HTTP/1.1
@@ -644,10 +729,10 @@ Connection closed by foreign host.
 
 ### 3.3 Methods: what you want to do
 
-#### E305_head_root_200_telnet_local
+#### E305_head_root_200_local
 
-<!-- include: telnet/E305_head_root_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E305_head_root_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -655,7 +740,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 HEAD / HTTP/1.1
@@ -680,10 +765,10 @@ Host: localhost
 <br>
 <br>
 
-#### E306_get_badMethod_501_telnet_local
+#### E306_get_badMethod_501_local
 
-<!-- include: telnet/E306_get_badMethod_501_telnet_local.http -->
-**Connect**
+<!-- include: messages/E306_get_badMethod_501_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -691,7 +776,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 BADMETHOD / HTTP/1.1
@@ -748,10 +833,10 @@ two comments). That's the real difference between POST and PUT.
 
 ### 3.4 Files, folders and the response
 
-#### E307_get_file_200_telnet_local
+#### E307_get_file_200_local
 
-<!-- include: telnet/E307_get_file_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E307_get_file_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -759,7 +844,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testfile.txt HTTP/1.1
@@ -786,10 +871,10 @@ Host: localhost
 <br>
 <br>
 
-#### E308_get_subFolderFile_200_telnet_local
+#### E308_get_subFolderFile_200_local
 
-<!-- include: telnet/E308_get_subFolderFile_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E308_get_subFolderFile_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -797,7 +882,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testFolder/testSubfolderFile.txt HTTP/1.1
@@ -822,10 +907,10 @@ Host: localhost
 <br>
 <br>
 
-#### E309_get_doubleSlash_200_telnet_local
+#### E309_get_doubleSlash_200_local
 
-<!-- include: telnet/E309_get_doubleSlash_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E309_get_doubleSlash_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -833,7 +918,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET // HTTP/1.1
@@ -859,10 +944,10 @@ Host: localhost
 <br>
 <br>
 
-#### E310_head_file_headers_200_telnet_local
+#### E310_head_file_headers_200_local
 
-<!-- include: telnet/E310_head_file_headers_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E310_head_file_headers_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -870,7 +955,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 HEAD /testfile.txt HTTP/1.1
@@ -916,10 +1001,10 @@ Background notes: `http_mini_server_root/Info_Encoding_Characters.txt`.
 <br>
 <br>
 
-#### E311_get_fileNameSpaces_400_telnet_local
+#### E311_get_fileNameSpaces_400_local
 
-<!-- include: telnet/E311_get_fileNameSpaces_400_telnet_local.http -->
-**Connect**
+<!-- include: messages/E311_get_fileNameSpaces_400_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -927,7 +1012,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testfile with space.txt HTTP/1.1
@@ -953,10 +1038,10 @@ Host: localhost
 <br>
 <br>
 
-#### E312_get_fileNameQuotes_400_telnet_local
+#### E312_get_fileNameQuotes_400_local
 
-<!-- include: telnet/E312_get_fileNameQuotes_400_telnet_local.http -->
-**Connect**
+<!-- include: messages/E312_get_fileNameQuotes_400_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -964,7 +1049,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /"testfile with space.txt" HTTP/1.1
@@ -989,10 +1074,10 @@ Host: localhost
 <br>
 <br>
 
-#### E313_get_fileNameUrlEncoding_200_telnet_local
+#### E313_get_fileNameUrlEncoding_200_local
 
-<!-- include: telnet/E313_get_fileNameUrlEncoding_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E313_get_fileNameUrlEncoding_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -1000,7 +1085,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /testfile%20with%20space.txt HTTP/1.1
@@ -1026,10 +1111,10 @@ Host: localhost
 <br>
 <br>
 
-#### E314_get_fileNameSpecialCharUrlEncoding_200_telnet_local
+#### E314_get_fileNameSpecialCharUrlEncoding_200_local
 
-<!-- include: telnet/E314_get_fileNameSpecialCharUrlEncoding_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E314_get_fileNameSpecialCharUrlEncoding_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -1037,7 +1122,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /test_file%25special%40parm%20german_%C3%A4.txt HTTP/1.1
@@ -1075,10 +1160,10 @@ Host: localhost
 
 ### 3.6 A rule the local server ignores
 
-#### E315_get_root_missingHost_200_telnet_local
+#### E315_get_root_missingHost_200_local
 
-<!-- include: telnet/E315_get_root_missingHost_200_telnet_local.http -->
-**Connect**
+<!-- include: messages/E315_get_root_missingHost_200_local.http -->
+**The Carrier**
 
 ```bash
 telnet 127.0.0.1 8080
@@ -1086,7 +1171,7 @@ telnet 127.0.0.1 8080
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET / HTTP/1.1
@@ -1112,10 +1197,10 @@ GET / HTTP/1.1
 <br>
 <br>
 
-## Chapter 4: The Simple GET Experiments, Internet
+## Chapter 4: Concepts: Simple GET on the Internet
 
-> Chapter navigation: [Previous: Chapter 3](#chapter-3-the-experiments-local-telnet)
-> · [Next: Chapter 5](#chapter-5-the-simple-post-experiments-internet)
+> Chapter navigation: [Previous: Chapter 3](#chapter-3-concepts-the-local-server)
+> · [Next: Chapter 5](#chapter-5-concepts-sending-data)
 
 These experiments require internet access and plain HTTP. Live server
 responses can change; use the expected status code and response structure
@@ -1130,10 +1215,10 @@ All experiments in this chapter go to real servers on the internet:
 
 ### 4.1 Real servers on the internet
 
-#### E401_get_httpbin_get_200_telnet_internet
+#### E401_get_httpbin_get_200_internet
 
-<!-- include: telnet/E401_get_httpbin_get_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E401_get_httpbin_get_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1141,7 +1226,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET / HTTP/1.1
@@ -1170,10 +1255,10 @@ Connection: close
 <br>
 <br>
 
-#### E402_get_httpbin_ip_200_telnet_internet
+#### E402_get_httpbin_ip_200_internet
 
-<!-- include: telnet/E402_get_httpbin_ip_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E402_get_httpbin_ip_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1181,7 +1266,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /ip HTTP/1.1
@@ -1209,10 +1294,10 @@ Connection: close
 <br>
 <br>
 
-#### E403_get_example_200_telnet_internet
+#### E403_get_example_200_internet
 
-<!-- include: telnet/E403_get_example_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E403_get_example_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet example.org 80
@@ -1220,7 +1305,7 @@ telnet example.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET / HTTP/1.1
@@ -1247,10 +1332,10 @@ Connection: close
 <br>
 <br>
 
-#### E404_get_httpbin_missingHost_400_telnet_internet
+#### E404_get_httpbin_missingHost_400_internet
 
-<!-- include: telnet/E404_get_httpbin_missingHost_400_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E404_get_httpbin_missingHost_400_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1258,7 +1343,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get HTTP/1.1
@@ -1296,10 +1381,10 @@ under `"args"`.
 <br>
 <br>
 
-#### E405_get_httpbin_queryString_200_telnet_internet
+#### E405_get_httpbin_queryString_200_internet
 
-<!-- include: telnet/E405_get_httpbin_queryString_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E405_get_httpbin_queryString_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1307,7 +1392,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get?name=Amit&city=Zurich HTTP/1.1
@@ -1359,16 +1444,16 @@ Connection closed by foreign host.
 - **What happens:** `200 OK`, JSON with `"args": {"city": "Zurich", "name": "Amit"}`.
 - **Lesson:** `?` starts the query, `=` joins key and value, `&` separates pairs.
 - **Read the response:** `"headers"` lists only `Host` - telnet sends nothing
-  you didn't type. (curl and httr2 add more, see chapter 8.)
+  you didn't type. (curl and httr2 add more, see chapter 6.)
 
 <br>
 <br>
 <br>
 
-#### E406_get_httpbin_querySpaceEncoded_200_telnet_internet
+#### E406_get_httpbin_querySpaceEncoded_200_internet
 
-<!-- include: telnet/E406_get_httpbin_querySpaceEncoded_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E406_get_httpbin_querySpaceEncoded_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1376,7 +1461,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get?city=St%20Gallen HTTP/1.1
@@ -1432,10 +1517,10 @@ Connection closed by foreign host.
 <br>
 <br>
 
-#### E407_get_httpbin_queryAmpersandEncoded_200_telnet_internet
+#### E407_get_httpbin_queryAmpersandEncoded_200_internet
 
-<!-- include: telnet/E407_get_httpbin_queryAmpersandEncoded_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E407_get_httpbin_queryAmpersandEncoded_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1443,7 +1528,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get?company=Johnson%26Johnson&country=US HTTP/1.1
@@ -1501,10 +1586,10 @@ Connection closed by foreign host.
 <br>
 <br>
 
-#### E408_get_httpbin_queryPlusSign_200_telnet_internet
+#### E408_get_httpbin_queryPlusSign_200_internet
 
-<!-- include: telnet/E408_get_httpbin_queryPlusSign_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E408_get_httpbin_queryPlusSign_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1512,7 +1597,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get?q=a+b&r=a%2Bb HTTP/1.1
@@ -1571,10 +1656,10 @@ Connection closed by foreign host.
 
 ### 4.3 Headers: telling the server more
 
-#### E409_get_httpbin_multipleHeaders_200_telnet_internet
+#### E409_get_httpbin_multipleHeaders_200_internet
 
-<!-- include: telnet/E409_get_httpbin_multipleHeaders_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E409_get_httpbin_multipleHeaders_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1582,7 +1667,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get HTTP/1.1
@@ -1624,10 +1709,10 @@ see codes you rarely meet on purpose.
 <br>
 <br>
 
-#### E410_get_httpbin_status201_201_telnet_internet
+#### E410_get_httpbin_status201_201_internet
 
-<!-- include: telnet/E410_get_httpbin_status201_201_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E410_get_httpbin_status201_201_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1635,7 +1720,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /status/201 HTTP/1.1
@@ -1661,10 +1746,10 @@ Connection: close
 <br>
 <br>
 
-#### E411_get_httpbin_status204_204_telnet_internet
+#### E411_get_httpbin_status204_204_internet
 
-<!-- include: telnet/E411_get_httpbin_status204_204_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E411_get_httpbin_status204_204_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1672,7 +1757,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /status/204 HTTP/1.1
@@ -1698,10 +1783,10 @@ Connection: close
 <br>
 <br>
 
-#### E412_get_httpbin_status500_500_telnet_internet
+#### E412_get_httpbin_status500_500_internet
 
-<!-- include: telnet/E412_get_httpbin_status500_500_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E412_get_httpbin_status500_500_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1709,7 +1794,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /status/500 HTTP/1.1
@@ -1735,10 +1820,10 @@ Connection: close
 <br>
 <br>
 
-#### E413_get_httpbin_redirectChain_302_telnet_internet
+#### E413_get_httpbin_redirectChain_302_internet
 
-<!-- include: telnet/E413_get_httpbin_redirectChain_302_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E413_get_httpbin_redirectChain_302_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1746,7 +1831,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /redirect/2 HTTP/1.1
@@ -1777,10 +1862,10 @@ Connection: close
 
 ### 4.5 Keeping the line open
 
-#### E414_get_httpbin_keepAliveTwoRequests_200_telnet_internet
+#### E414_get_httpbin_keepAliveTwoRequests_200_internet
 
-<!-- include: telnet/E414_get_httpbin_keepAliveTwoRequests_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E414_get_httpbin_keepAliveTwoRequests_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1788,7 +1873,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get?request=1 HTTP/1.1
@@ -1820,11 +1905,10 @@ Connection: close
 <br>
 <br>
 
-## Chapter 5: The Simple POST Experiments, Internet
+## Chapter 5: Concepts: Sending Data
 
-> Chapter navigation: [Previous: Chapter 4](#chapter-4-the-simple-get-experiments-internet)
-> · [Next: Chapter 6](#chapter-6-adding-authentication)
-
+> Chapter navigation: [Previous: Chapter 4](#chapter-4-concepts-simple-get-on-the-internet)
+> · [Next: Chapter 6](#chapter-6-practice-part-1-with-tools)
 
 ### 5.1 Sending data (POST)
 
@@ -1835,10 +1919,10 @@ the empty line. httpbin's `/post` endpoint echoes back what it received.
 <br>
 <br>
 
-#### E501_post_httpbinText_200_telnet_internet
+#### E501_post_httpbinText_200_internet
 
-<!-- include: telnet/E501_post_httpbinText_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E501_post_httpbinText_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1846,7 +1930,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -1879,10 +1963,10 @@ hello world
 <br>
 <br>
 
-#### E502_post_httpbinJson_200_telnet_internet
+#### E502_post_httpbinJson_200_internet
 
-<!-- include: telnet/E502_post_httpbinJson_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E502_post_httpbinJson_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1890,7 +1974,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -1932,10 +2016,10 @@ count on purpose to see what happens.
 <br>
 <br>
 
-#### E503_post_httpbinText_shortLength_200_telnet_internet
+#### E503_post_httpbinText_shortLength_200_internet
 
-<!-- include: telnet/E503_post_httpbinText_shortLength_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E503_post_httpbinText_shortLength_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1943,7 +2027,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -1973,10 +2057,10 @@ hello world
 <br>
 <br>
 
-#### E504_post_httpbinText_longLength_timeout_telnet_internet
+#### E504_post_httpbinText_longLength_timeout_internet
 
-<!-- include: telnet/E504_post_httpbinText_longLength_timeout_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E504_post_httpbinText_longLength_timeout_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -1984,7 +2068,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -2015,10 +2099,10 @@ hello world
 <br>
 <br>
 
-#### E505_post_httpbinText_missingLengthNoData_telnet_internet
+#### E505_post_httpbinText_missingLengthNoData_internet
 
-<!-- include: telnet/E505_post_httpbinText_missingLengthNoData_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E505_post_httpbinText_missingLengthNoData_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2026,7 +2110,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -2057,10 +2141,10 @@ hello world
 <br>
 <br>
 
-#### E506_post_httpbinText_missingBlankLine_400_telnet_internet
+#### E506_post_httpbinText_missingBlankLine_400_internet
 
-<!-- include: telnet/E506_post_httpbinText_missingBlankLine_400_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E506_post_httpbinText_missingBlankLine_400_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2068,7 +2152,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 POST /post HTTP/1.1
@@ -2108,10 +2192,10 @@ echoes back what it received. Same idea as 5.1, new methods.
 <br>
 <br>
 
-#### E507_put_httpbinJson_200_telnet_internet
+#### E507_put_httpbinJson_200_internet
 
-<!-- include: telnet/E507_put_httpbinJson_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E507_put_httpbinJson_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2119,7 +2203,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 PUT /put HTTP/1.1
@@ -2150,10 +2234,10 @@ Connection: close
 <br>
 <br>
 
-#### E508_patch_httpbinJson_200_telnet_internet
+#### E508_patch_httpbinJson_200_internet
 
-<!-- include: telnet/E508_patch_httpbinJson_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E508_patch_httpbinJson_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2161,7 +2245,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 PATCH /patch HTTP/1.1
@@ -2190,10 +2274,10 @@ Connection: close
 <br>
 <br>
 
-#### E509_delete_httpbin_200_telnet_internet
+#### E509_delete_httpbin_200_internet
 
-<!-- include: telnet/E509_delete_httpbin_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E509_delete_httpbin_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2201,7 +2285,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 DELETE /delete HTTP/1.1
@@ -2229,10 +2313,10 @@ Connection: close
 <br>
 <br>
 
-#### E510_options_httpbin_200_telnet_internet
+#### E510_options_httpbin_200_internet
 
-<!-- include: telnet/E510_options_httpbin_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E510_options_httpbin_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2240,7 +2324,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 OPTIONS /get HTTP/1.1
@@ -2267,10 +2351,10 @@ Connection: close
 <br>
 <br>
 
-#### E511_get_httpbin_wrongMethod_405_telnet_internet
+#### E511_get_httpbin_wrongMethod_405_internet
 
-<!-- include: telnet/E511_get_httpbin_wrongMethod_405_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E511_get_httpbin_wrongMethod_405_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2278,7 +2362,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /post HTTP/1.1
@@ -2307,18 +2391,116 @@ Connection: close
 <br>
 <br>
 
-## Chapter 6: Adding Authentication
+## Chapter 6: Practice: Part 1 with Tools
 
-> Chapter navigation: [Previous: Chapter 5](#chapter-5-the-simple-post-experiments-internet)
-> · [Next: Chapter 7](#chapter-7-bridge-from-http-to-https)
+> Chapter navigation: [Previous: Chapter 5](#chapter-5-concepts-sending-data)
+> · [Next: Chapter 7](#chapter-7-concepts-authentication)
 
+You know every part of a Message now. This chapter sends **the same Message
+files** with tools - nothing is copied or retyped. A small helper reads a file
+and builds the request from it; the server comes from the file name suffix
+(`_local`, `_internet`) and the `Host:` line.
 
-### 6.1 Logging in with a token
+| The Carrier | You write | It writes for you |
+|---|---|---|
+| telnet / nc / ncat | everything | nothing |
+| **httr2** (RStudio) | nothing - the helper reads The Message | Host, Content-Length, encoding |
+| **curl** (Terminal) | nothing - the helper reads The Message | the same as httr2 (httr2 uses curl inside) |
 
-#### E601_get_httpbin_bearerMissing_401_telnet_internet
+More tools (for example Python) can be added later as new sections here; the
+Message files stay the same.
 
-<!-- include: telnet/E601_get_httpbin_bearerMissing_401_telnet_internet.http -->
-**Connect**
+<br>
+<br>
+<br>
+
+### 6.1 With RStudio (httr2)
+
+Open the repository folder in RStudio and load the shared helpers once:
+
+```r
+source("rstudio/http_helpers.R")   # message_request(), show(), send_http_file() ...
+```
+
+**One Message** - the helper turns the file into an httr2 request:
+
+```r
+req <- message_request("messages/E301_get_root_200_local.http")
+req_dry_run(req)     # what httr2 would send - compare with the file
+resp <- show(req)    # send it: "->" = sent, "<-" = received
+```
+
+**The raw Carrier in R** - `send_http_file()` sends a file byte for byte,
+like telnet. Use it to compare wherever httr2 behaves differently:
+
+```r
+send_http_file("messages/E503_post_httpbinText_shortLength_200_internet.http")
+```
+
+**All Part 1 Messages at once** - a for loop sends every file of chapters 3
+to 5 and collects the status in a tibble: `expected` (from the file name)
+next to `received`. The rows where they differ are exactly the cases in 6.3.
+
+Script with every experiment and the loop: `rstudio/practice_part1_basics.R`
+
+<br>
+<br>
+<br>
+
+### 6.2 With curl
+
+```bash
+source curl/http_to_curl.sh
+http_to_curl messages/E301_get_root_200_local.http
+HTTP_TO_CURL_DRY=1 http_to_curl messages/E301_get_root_200_local.http   # only show the command
+```
+
+Script with every experiment: `curl/practice_part1_basics.sh`
+
+**Tip:** API documentation and the browser's developer tools ("Copy as cURL")
+show requests as curl commands. You don't need to run them - httr2 can
+translate them:
+
+```r
+httr2::curl_translate("curl -H 'Accept: application/json' https://httpbin.org/get")
+```
+
+<br>
+<br>
+<br>
+
+### 6.3 What the tools change
+
+| Experiments | Raw Carrier (telnet, nc, ncat) | httr2 / curl |
+|---|---|---|
+| E302, E413 redirects | you see the 301/302 | httr2 follows unless `followlocation = FALSE`; curl shows it (add `-L` to follow) |
+| E311, E312 raw spaces | server answers 400 | the tool refuses or encodes the URL |
+| E315, E404 missing Host | sent without Host | Host is always added (curl: remove with `-H "Host:"`) |
+| E503 - E505 wrong or missing Content-Length | server reads the wrong number of bytes | the tool calculates the length, the whole body arrives |
+| E506 missing empty line | body read as a header | the same: the line becomes a header |
+| E414 two requests in one file | both answered on one connection | only the first is sent |
+
+Everything else arrives with the same meaning: method, path, headers and
+body. Look for `Content-Length` in the verbose output - it isn't in most
+Message files, the tool added it.
+
+<br>
+<br>
+<br>
+
+**Part 2 - Authentication and HTTPS** (chapters 7 to 9)
+
+## Chapter 7: Concepts: Authentication
+
+> Chapter navigation: [Previous: Chapter 6](#chapter-6-practice-part-1-with-tools)
+> · [Next: Chapter 8](#chapter-8-concepts-https)
+
+### 7.1 Logging in with a token
+
+#### E701_get_httpbin_bearerMissing_401_internet
+
+<!-- include: messages/E701_get_httpbin_bearerMissing_401_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2326,7 +2508,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /bearer HTTP/1.1
@@ -2354,10 +2536,10 @@ Connection: close
 <br>
 <br>
 
-#### E602_get_httpbin_bearerToken_200_telnet_internet
+#### E702_get_httpbin_bearerToken_200_internet
 
-<!-- include: telnet/E602_get_httpbin_bearerToken_200_telnet_internet.http -->
-**Connect**
+<!-- include: messages/E702_get_httpbin_bearerToken_200_internet.http -->
+**The Carrier**
 
 ```bash
 telnet httpbin.org 80
@@ -2365,7 +2547,7 @@ telnet httpbin.org 80
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /bearer HTTP/1.1
@@ -2398,25 +2580,23 @@ Connection: close
 <br>
 <br>
 
----
+## Chapter 8: Concepts: HTTPS
 
-## Chapter 7: Bridge: from HTTP to HTTPS
-
-> Chapter navigation: [Previous: Chapter 6](#chapter-6-adding-authentication)
-> · [Next: Chapter 8](#chapter-8-the-same-examples-three-ways-telnet-curl-rstudio)
+> Chapter navigation: [Previous: Chapter 7](#chapter-7-concepts-authentication)
+> · [Next: Chapter 9](#chapter-9-practice-part-2-with-tools)
 
 OpenSSL and these HTTPS experiments require internet access. Confirm that
 DNS and TLS connections are available before continuing.
 
 Almost every real API (GitHub included) only speaks **HTTPS**. telnet can't
 do that. This chapter shows that HTTPS is **the same HTTP you already know,
-just inside an encrypted tunnel** - so everything from chapters 3 - 6 still applies.
+just inside an encrypted tunnel** - so everything from chapters 3 to 7 still applies.
 
 <br>
 <br>
 <br>
 
-### 7.1 The idea, in plain words
+### 8.1 The idea, in plain words
 
 Think of HTTP as a **postcard**: anyone handling it on the way can read it.
 HTTPS puts the very same postcard **inside a sealed envelope**:
@@ -2434,11 +2614,11 @@ HTTPS:   your text  --> [ encrypt ] ====tunnel====> [ decrypt ] -->  server
 <br>
 <br>
 
-### 7.2 The tool: openssl
+### 8.2 The tool: openssl
 
 `openssl s_client` builds the encrypted tunnel for you. After that it
 behaves like telnet: what you paste goes through the tunnel. Commands are in
-`openssl/000_run_openssl_connection.txt`:
+`carriers/openssl.txt` (ncat can do the same: `ncat -C --ssl host 443`):
 
 ```bash
 openssl s_client -connect example.org:443 -quiet -crlf
@@ -2453,10 +2633,10 @@ openssl s_client -connect example.org:443 -quiet -crlf
 <br>
 <br>
 
-### 7.3 Warm-up: an old friend, encrypted
+### 8.3 Warm-up: an old friend, encrypted
 
 No new file needed. Connect to `example.org:443` as above, then paste
-`telnet/E403_get_example_200_telnet_internet.http` - exactly the same text you sent with telnet.
+`messages/E403_get_example_200_internet.http` - exactly the same text you sent with telnet.
 
 - **What happens:** the same `200 OK` and "Example Domain" page as in E403.
 - **Lesson:** nothing in the request changed. Only the connection did.
@@ -2465,10 +2645,10 @@ No new file needed. Connect to `example.org:443` as above, then paste
 <br>
 <br>
 
-### 7.4 E701_get_httpbin_https_200_openssl
+### 8.4 E801_get_httpbin_200_https
 
-<!-- include: openssl/E701_get_httpbin_https_200_openssl.http -->
-**Connect**
+<!-- include: messages/E801_get_httpbin_200_https.http -->
+**The Carrier**
 
 ```bash
 openssl s_client -connect httpbin.org:443 -quiet -crlf
@@ -2476,7 +2656,7 @@ openssl s_client -connect httpbin.org:443 -quiet -crlf
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /get HTTP/1.1
@@ -2504,10 +2684,10 @@ Connection: close
 <br>
 <br>
 
-### 7.5 E702_get_githubApi_zen_200_openssl
+### 8.5 E802_get_githubApi_zen_200_https
 
-<!-- include: openssl/E702_get_githubApi_zen_200_openssl.http -->
-**Connect**
+<!-- include: messages/E802_get_githubApi_zen_200_https.http -->
+**The Carrier**
 
 ```bash
 openssl s_client -connect api.github.com:443 -quiet -crlf
@@ -2515,7 +2695,7 @@ openssl s_client -connect api.github.com:443 -quiet -crlf
 
 <br>
 
-**Request**
+**The Message**
 
 ```bash
 GET /zen HTTP/1.1
@@ -2545,242 +2725,107 @@ Connection: close
 <br>
 <br>
 
-### 7.6 What you now know
+### 8.6 What you now know
 
-| | telnet (chapters 3 - 6) | openssl (chapter 7) |
+| | telnet (chapters 3 to 7) | openssl (chapter 8) |
 |---|---|---|
 | Port | 80 | 443 |
 | Encrypted | no | yes |
 | Request text | you type it | you type it - identical |
 | Who builds the tunnel | nobody | openssl |
 
-Next step: tools that write the request text for you too.
-
----
+Practice with tools: chapter 9.
 
 <br>
 <br>
 <br>
 
+## Chapter 9: Practice: Part 2 with Tools
 
-## Chapter 8: The same examples three ways: telnet, curl, RStudio
+> Chapter navigation: [Previous: Chapter 8](#chapter-8-concepts-https)
+> · [Next: Chapter 10](#chapter-10-what-you-can-do-now)
 
-> Chapter navigation: [Previous: Chapter 7](#chapter-7-bridge-from-http-to-https)
-> · [Next: Chapter 9](#chapter-9-what-you-can-do-now)
+The same idea as chapter 6, for the authentication and HTTPS Messages.
 
-You've written every request by hand. Now let two tools write them, and
-compare with what you know.
+<br>
+<br>
+<br>
 
-The runnable code lives in two folders, with one section per example
-(same `NNN` as the raw file) and comments explaining what the tool does
-for you:
+### 9.1 With RStudio (httr2)
 
-| Folder | File | How to run |
-|---|---|---|
-| `curl/` | `curl_examples.sh` | VS Code: one line at a time with "Run Selected Text" (the script refuses a whole-file run on purpose) |
-| `rstudio/` | `httr2_examples.R` | RStudio: open the repo as project, run section 0, then one example at a time (`Cmd + Enter`) |
-| `rstudio/` | `send_http_file.R` | sends request text from `telnet/`, normalizing line endings - telnet inside R |
+```r
+source("rstudio/http_helpers.R")
+resp <- show(message_request("messages/E702_get_httpbin_bearerToken_200_internet.http"))
+resp <- show(message_request("messages/E801_get_httpbin_200_https.http"))
+```
 
-The tables below are the **comparison**: what each example looks like in
-each tool, side by side.
+- **Tokens:** E702 copies the dummy token from the file. For a real API, a
+  token never goes into a file: store it once in `~/.Renviron`
+  (`usethis::edit_r_environ()`, line `GITHUB_PAT=ghp_...`) and use
+  `req_auth_bearer_token(Sys.getenv("GITHUB_PAT"))`.
+- **HTTPS:** a `https://` URL is all it takes - httr2 builds the encrypted
+  tunnel, nothing else changes.
 
-| Tool | You write | It writes for you |
-|---|---|---|
-| telnet / openssl | everything | nothing |
-| **curl** (Terminal) | URL + options | request line, Host, Content-Length, empty line, encryption |
-| **httr2** (RStudio) | R code | the same as curl (httr2 uses curl inside) |
+Script with every experiment and a real GitHub call: `rstudio/practice_part2_auth_https.R`
 
-### 8.1 Easy start: one example, three ways
+<br>
+<br>
+<br>
 
-Take **E301** and the local server (start it as in chapter 2).
+### 9.2 With curl
 
-**telnet** - you write everything:
 ```bash
-telnet 127.0.0.1 8080
-# paste telnet/E301_get_root_200_telnet_local.http
+source curl/http_to_curl.sh
+http_to_curl messages/E801_get_httpbin_200_https.http
 ```
 
-**curl** - you give the URL, `-v` (verbose) shows what it sends:
+Script: `curl/practice_part2_auth_https.sh`
+
+<br>
+<br>
+<br>
+
+### 9.3 openssl for troubleshooting
+
+You don't need openssl to use HTTPS - httr2 and curl handle it. It becomes
+useful when HTTPS **fails**, typically at work, where networks inspect HTTPS
+traffic. An error like
+
 ```bash
-curl -v http://127.0.0.1:8080/
-```
-In the output, lines starting with `>` are the **request** curl wrote,
-lines starting with `<` are the **response**. Compare the `>` lines with
-your file E301: same request line, same `Host` - plus `User-Agent` and
-`Accept`, which curl adds on its own.
-
-**RStudio (httr2)** - you write R:
-```r
-library(httr2)
-
-request("http://127.0.0.1:8080") |>
-  req_perform(verbosity = 1)      # -> request lines, <- response lines
-```
-`verbosity = 1` is the R version of `curl -v`. To see the request without
-sending it: `req_dry_run()`.
-
-### 8.2 Bonus: telnet inside RStudio
-
-R can open a raw connection too, so you can send the request text in your
-`.http` files from RStudio (full script: `rstudio/send_http_file.R`). The
-helper converts LF line endings to HTTP's CRLF, adds a final CRLF when needed
-to terminate the request, and returns the response as text lines. Source the
-script to define the helper; it makes no requests until you call it. Open
-RStudio in this repo folder, then:
-
-```r
-# Send a plain-text .http file over a raw connection, like telnet.
-# Only for plain HTTP (_telnet_local and _telnet_internet files), not HTTPS.
-send_http_file <- function(file, host, port = 80) {
-  if (!file.exists(file)) {
-    stop("Request file does not exist: ", file, call. = FALSE)
-  }
-  request_text <- readChar(file, file.size(file), useBytes = TRUE)
-  request_text <- gsub("\r?\n", "\r\n", request_text)   # HTTP line endings
-  if (!grepl("\r\n\r\n$", request_text)) {
-    request_text <- paste0(request_text, "\r\n")
-  }
-  con <- socketConnection(host = host, port = port,
-                          open = "r+", blocking = TRUE, timeout = 10)
-  on.exit(close(con))
-  writeChar(request_text, con, eos = NULL, useBytes = TRUE)
-  flush(con)
-  response <- readLines(con, warn = FALSE)
-  if (length(response) == 0L) {
-    stop("No response received from ", host, ":", port, call. = FALSE)
-  }
-  response
-}
-
-send_http_file("telnet/E301_get_root_200_telnet_local.http", "127.0.0.1", 8080)
-send_http_file("telnet/E402_get_httpbin_ip_200_telnet_internet.http", "httpbin.org")
+SSL certificate problem: unable to get local issuer certificate
 ```
 
-Files without `Connection: close` (E502, E504) make it wait up to 10 seconds
-(the `timeout`), just like telnet hangs.
+means the encrypted tunnel failed - not your Message. Look at the
+certificates the server (or the company proxy) presents:
 
-### 8.3 All examples side by side
-
-Setup for the R lines:
-```r
-library(httr2)
-local <- request("http://127.0.0.1:8080")
-web   <- request("http://httpbin.org")
-bin   <- request("https://httpbin.org")
-never_error <- function(resp) FALSE    # keep 4xx/5xx responses to inspect
+```bash
+openssl s_client -connect api.github.com:443 -showcerts
 ```
-Add `|> req_error(is_error = never_error) |> req_perform(verbosity = 1)` to
-any R line to send it and see the conversation.
 
-**3.1 - 3.2: paths and redirects**
+If the certificate comes from your company instead of the real server, ask
+IT for the company certificate (CA) to trust. Never switch certificate
+checks off.
 
-| File | curl | httr2 |
+<br>
+<br>
+<br>
+
+### 9.4 What the tools change
+
+| Experiments | Raw Carrier (openssl, ncat --ssl) | httr2 / curl |
 |---|---|---|
-| E301 | `curl -v http://127.0.0.1:8080/` | `local` |
-| E302 | `curl -v http://127.0.0.1:8080/testFolder` | `local \|> req_url_path_append("testFolder") \|> req_options(followlocation = FALSE)` |
-| E303 | `curl -v http://127.0.0.1:8080/testFolder/` | `local \|> req_url_path_append("testFolder/")` |
-| E304 | `curl -v http://127.0.0.1:8080/missingFile.txt` | `local \|> req_url_path_append("missingFile.txt")` |
-
-Note: curl and httr2 **follow redirects automatically**. E302 only shows the
-301 when you switch that off (`followlocation = FALSE`); with curl, *not*
-adding `-L` keeps the 301.
-
-**4.2: query strings** - the tools encode for you
-
-| File | curl | httr2 |
-|---|---|---|
-| E405 | `curl -G http://httpbin.org/get -d name=Amit -d city=Zurich` | `web \|> req_url_path_append("get") \|> req_url_query(name = "Amit", city = "Zurich")` |
-| E406 | `curl -G http://httpbin.org/get --data-urlencode "city=St Gallen"` | `... req_url_query(city = "St Gallen")` |
-| E407 | `curl -G http://httpbin.org/get --data-urlencode "company=Johnson&Johnson"` | `... req_url_query(company = "Johnson&Johnson")` |
-| E408 | `curl -G http://httpbin.org/get --data-urlencode "r=a+b"` | `... req_url_query(r = "a+b")` |
-
-Exercise: run `req_dry_run()` and find how httr2 encoded the space, the `&`
-and the `+`. Compare with your files E406 - E408.
-
-**3.3 and 5.3: methods**
-
-| File | curl | httr2 |
-|---|---|---|
-| E305 / E310 | `curl -I http://127.0.0.1:8080/testfile.txt` | `local \|> req_url_path_append("testfile.txt") \|> req_method("HEAD")` |
-| E306 | `curl -v -X BADMETHOD http://127.0.0.1:8080/` | `local \|> req_method("BADMETHOD")` |
-| E507 | `curl -X PUT -H "Content-Type: application/json" -d '{"name":"Amit","city":"Zurich"}' http://httpbin.org/put` | `web \|> req_url_path_append("put") \|> req_method("PUT") \|> req_body_json(list(name = "Amit", city = "Zurich"))` |
-| E508 | `curl -X PATCH -H "Content-Type: application/json" -d '{"city":"Bern"}' http://httpbin.org/patch` | `web \|> req_url_path_append("patch") \|> req_method("PATCH") \|> req_body_json(list(city = "Bern"))` |
-| E509 | `curl -X DELETE http://httpbin.org/delete` | `web \|> req_url_path_append("delete") \|> req_method("DELETE")` |
-| E510 | `curl -i -X OPTIONS http://httpbin.org/get` | `web \|> req_url_path_append("get") \|> req_method("OPTIONS")`, then `resp_header(resp, "allow")` |
-| E511 | `curl -i http://httpbin.org/post` | `web \|> req_url_path_append("post")` (GET is the default) |
-
-**3.5: encoding in paths**
-
-| File | curl | httr2 |
-|---|---|---|
-| E311 / E313 | `curl -v "http://127.0.0.1:8080/testfile%20with%20space.txt"` | `local \|> req_url_path_append("testfile with space.txt")` |
-| E314 | `curl -v "http://127.0.0.1:8080/test_file%25special%40parm%20german_%C3%A4.txt"` | `local \|> req_url_path_append("test_file%special@parm german_ä.txt")` |
-
-Exercise: curl expects you to give it an already encoded URL. Check with
-`req_dry_run()` whether httr2 encodes the path for you - and if a character
-isn't encoded, use `curl::curl_escape("ä")` to see what it should be.
-
-**4.1 and 4.4: servers, Host and status codes**
-
-| File | curl | httr2 |
-|---|---|---|
-| E401 | `curl -v http://httpbin.org/` | `request("http://httpbin.org")` |
-| E402 | `curl http://httpbin.org/ip` | `web \|> req_url_path_append("ip")`, then `resp_body_json(resp)` |
-| E403 | `curl http://example.org/` | `request("http://example.org")` |
-| E404 | `curl -v -H "Host:" http://httpbin.org/get` | not possible: httr2 always sends `Host` |
-| E410 - E412 | `curl -i http://httpbin.org/status/201` (204, 500) | `web \|> req_url_path_append("status", "201")` |
-| E413 | `curl -i http://httpbin.org/redirect/2` (add `-L` to follow) | `web \|> req_url_path_append("redirect", "2") \|> req_options(followlocation = FALSE)` |
-
-In curl, `-H "Host:"` (empty value) *removes* a header curl would normally
-add - a handy trick to repeat E404.
-
-**5.1 - 5.2: sending data**
-
-| File | curl | httr2 |
-|---|---|---|
-| E501 | `curl -H "Content-Type: text/plain" --data-binary "hello world" http://httpbin.org/post` | `web \|> req_url_path_append("post") \|> req_body_raw("hello world", type = "text/plain")` |
-| E502 | `curl -H "Content-Type: application/json" -d '{"name":"Amit","city":"Switzerland"}' http://httpbin.org/post` | `web \|> req_url_path_append("post") \|> req_body_json(list(name = "Amit", city = "Switzerland"))` |
-| E503 - E506 | (calculated for you) | (calculated for you) |
-
-This is the clearest difference between the worlds: curl and httr2
-**calculate `Content-Length` and insert the empty line themselves**, so the
-mistakes of 5.2 simply can't happen. Look for `Content-Length` in the
-`-v` / `verbosity = 1` output - you never typed it.
-
-**4.3, 4.5 and 6: headers, tokens, connections**
-
-| File | curl | httr2 |
-|---|---|---|
-| E409 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" http://httpbin.org/get` | `web \|> req_url_path_append("get") \|> req_headers(Accept = "application/json") \|> req_user_agent("FileTest/1.0")` |
-| E601 | `curl -i http://httpbin.org/bearer` | `web \|> req_url_path_append("bearer")` |
-| E602 | `curl -H "Authorization: Bearer test123" http://httpbin.org/bearer` | `web \|> req_url_path_append("bearer") \|> req_auth_bearer_token("test123")` |
-| E414 | `curl -v "http://httpbin.org/get?request=1" "http://httpbin.org/get?request=2"` | two `req_perform()` calls in a row |
-
-For E414, look for `Re-using existing connection` in curl's `-v` output: that
-is keep-alive, done for you.
-
-**Chapter 7: HTTPS**
-
-| File | curl | httr2 |
-|---|---|---|
-| E701 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_user_agent("FileTest/1.0")` |
-| E702 | `curl -A "hello-http-learning (amitchaudhary82)" https://api.github.com/zen` | `request("https://api.github.com") \|> req_url_path_append("zen") \|> req_user_agent("hello-http-learning (amitchaudhary82)")`, then `resp_body_string(resp)` |
-
-With curl and httr2 the encryption is invisible: just write `https://`.
-In `-v` output, the lines starting with `*` show the TLS tunnel being built
-(certificate, protocol) - the work OpenSSL did in Chapter 7.
-
----
+| E701, E702 tokens | the token is typed into the Message | the token comes from the environment (`Sys.getenv`) |
+| E801, E802 HTTPS | you open the encrypted tunnel yourself | just `https://` - encryption is invisible |
 
 <br>
 <br>
 <br>
 
 
-## Chapter 9: What you can do now
+## Chapter 10: What you can do now
 
-> Chapter navigation: [Previous: Chapter 8](#chapter-8-the-same-examples-three-ways-telnet-curl-rstudio)
-> · [Next: Chapter 10](#chapter-10-other-files)
+> Chapter navigation: [Previous: Chapter 9](#chapter-9-practice-part-2-with-tools)
+> · [Next: Chapter 11](#chapter-11-other-files)
 
 After these 44 experiments you have written every part of an HTTP request
 yourself:
@@ -2792,11 +2837,11 @@ yourself:
 | Paths, folders, redirects | E302 - E304, E307 - E309, E413 |
 | Query strings | E405 - E408 |
 | URL encoding | E311 - E314, E406 - E408 |
-| Headers, Host, tokens | E301, E401, E409, E404, E315, E601, E602 |
+| Headers, Host, tokens | E301, E401, E409, E404, E315, E701, E702 |
 | Response headers | E310 |
 | Body, Content-Type, Content-Length, the empty line | E501 - E506 |
 | Connections: close and keep-alive | E401, E502, E414 |
-| HTTPS | E701, E702 |
+| HTTPS | E801, E802 |
 | Status codes 200, 201, 204, 301, 302, 400, 401, 404, 405, 500, 501 | all |
 
 **Success criteria**
@@ -2812,34 +2857,37 @@ yourself:
 exactly what they write for you. Further httr2 practice lives in the
 [**GitHub_HTTP** repository](https://github.com/amitchaudhary82/GitHub_HTTP).
 
+
 <br>
 <br>
 <br>
 
 
-## Chapter 10: Other files
+## Chapter 11: Other files
 
-> Chapter navigation: [Previous: Chapter 9](#chapter-9-what-you-can-do-now)
+> Chapter navigation: [Previous: Chapter 10](#chapter-10-what-you-can-do-now)
 
 | File | Content |
 |---|---|
 | `000_Syntax_NNN_method_scenario_status.txt` | file naming rule |
-| `build_readme.sh` | copies the request files into this README |
-| `telnet/000_run_python_mini_server.txt` | command to start the local server |
-| `telnet/000_run_telnet_connection.txt` | commands to connect (local server, httpbin) |
-| `NC/000_run_nc_connection.txt` | netcat commands for the same plain-HTTP requests |
-| `openssl/000_run_openssl_connection.txt` | commands for HTTPS connections (chapter 7) |
-| `curl/curl_examples.sh` | all examples with curl |
-| `rstudio/httr2_examples.R` | all examples with httr2 |
-| `rstudio/send_http_file.R` | raw files sent from R, like telnet |
+| `build_readme.sh` | copies the Message files into this README, numbers headings, builds the contents |
+| `000_run_python_mini_server.txt` | command to start the local server |
+| `messages/` | The Message: all 44 HTTP requests, the golden source |
+| `carriers/telnet.txt`, `nc.txt`, `ncat.txt`, `openssl.txt` | The Carrier: connect commands |
+| `rstudio/http_helpers.R` | shared R functions: `message_request()`, `show()`, `send_http_file()` (defines only, sends nothing) |
+| `rstudio/practice_part1_basics.R` | chapter 6: every Part 1 Message with httr2, plus a for loop over all |
+| `rstudio/practice_part2_auth_https.R` | chapter 9: authentication and HTTPS Messages with httr2, plus a real GitHub call |
+| `curl/http_to_curl.sh` | shared function: turns a Message file into a curl command |
+| `curl/practice_part1_basics.sh` | chapter 6: every Part 1 Message with curl |
+| `curl/practice_part2_auth_https.sh` | chapter 9: authentication and HTTPS Messages with curl |
 | `validate_readme.py` | offline check for request includes, experiment IDs and image links |
 | `http_mini_server_root/` | files served by the local server (incl. tricky names) |
 | `http_mini_server_root/Info_Encoding_Characters.txt` | notes on URL structure and special characters |
 
-### 10.1 Maintaining this README
+### 11.1 Maintaining this README
 
-The request files in `telnet/` and `openssl/` are the source of truth for
-request snippets. Do not edit those snippets directly in this README.
+The Message files in `messages/` are the source of truth for request
+snippets. Do not edit those snippets directly in this README.
 
 After changing a request file or heading, run the maintainer script from the
 repository folder:

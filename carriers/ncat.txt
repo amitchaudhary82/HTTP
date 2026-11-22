@@ -1,0 +1,18 @@
+# ncat (from the Nmap project) commands for the request files in ../messages/.
+# Works the same on macOS, Windows and Linux.
+# Install: macOS  brew install nmap | Windows: Nmap installer | Linux: sudo apt install ncat
+# -C (or --crlf) sends CR LF line endings, as HTTP expects.
+
+# Local server (files ending _local)
+ncat -C 127.0.0.1 8080
+
+# Internet servers, plain HTTP (files ending _internet)
+ncat -C httpbin.org 80
+
+# Internet servers, HTTPS (files ending _https) - ncat can encrypt too
+ncat -C --ssl httpbin.org 443
+ncat -C --ssl api.github.com 443
+
+# Send a file directly, byte for byte, from the repository root:
+#   ncat -C 127.0.0.1 8080 < messages/E301_get_root_200_local.http
+# Quit: Ctrl + C

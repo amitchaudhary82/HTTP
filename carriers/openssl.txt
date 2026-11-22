@@ -1,0 +1,6 @@
+# openssl commands for the HTTPS request files in ../messages/ (files ending _https).
+# openssl builds the encrypted tunnel; the request text is plain HTTP.
+openssl s_client -connect example.org:443 -quiet -crlf
+openssl s_client -connect httpbin.org:443 -quiet -crlf
+openssl s_client -connect api.github.com:443 -quiet -crlf
+# Quit: Ctrl + C
