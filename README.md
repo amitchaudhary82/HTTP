@@ -108,6 +108,8 @@ cd http_mini_server_root
 python3 -m http.server 8080 --bind 127.0.0.1
 ```
 
+The Terminal will act as a server and will be waiting for incoming requests
+![Image_000_Experiment_Local_Server_OK](images/Image_000_Experiment_Local_Server_OK.png)
 
 
 
@@ -117,7 +119,7 @@ Additional Info:
 - leave this Terminal open; it shows every request it receives
 
 
-### Connect with telnet
+### Connect with telnet to your local Server
 
 Open a **second** Terminal and connect to the server
 
@@ -125,6 +127,15 @@ Open a **second** Terminal and connect to the server
 telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
 
 ```
+
+![Image_000_Experiment_Telnet_Connection_OK](images/Image_000_Experiment_Telnet_Connection_OK.png)
+
+
+At this point you are connected to the Server, and you need to give your request which is now the below exercises
+<br>
+<br>
+<br>
+
 All requests are stored as files in `1_telnet/` and `2_openssl/`.
 
 Then paste the request shown with each experiment. The response appears below.
@@ -145,6 +156,9 @@ Tips:
 
 
 ## 3. The experiments (telnet)
+For this experiment we have setup folder and files with simple and special characters and we will try few combinations which will return the file names back
+
+![Image_001_Experiment_Telnet_Folder_Structure](images/Image_001_Experiment_Telnet_Folder_Structure.png)
 
 ### Level 1 - The first request
 
@@ -165,7 +179,12 @@ Host: localhost
 ```
 <!-- /include -->
 
+which should look like below
+![Image_002_Experiment_Telnet_The_First_Request](images/Image_002_Experiment_Telnet_The_First_Request.png)
 
+
+<br>
+<br>
 
 **Server Connection Confirmed**
 ```bash
@@ -175,6 +194,10 @@ Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...
 ```
 
 
+![Image_002_Experiment_Telnet_The_First_Request_Server_Confirmation](images/Image_002_Experiment_Telnet_The_First_Request_Server_Confirmation.png)
+
+<br>
+<br>
 
 **Response**
 
@@ -230,6 +253,8 @@ Connection closed by foreign host.
   bytes. `Connection closed by foreign host` = the server hung up after
   answering (HTTP/1.0 does that every time).
 
+<br>
+<br>
 
 **Sumulation via Browser**
 
@@ -237,9 +262,13 @@ This can also be simulated in browser via using
 ```bash
 http://localhost:8080
 ```
+<br>
 
-<img width="3182" height="632" alt="CleanShot 2026-11-21 at 21 28 18@2x" src="https://github.com/user-attachments/assets/8ddde72b-0799-4f47-b0c8-2fcb97a152b9" />
+![Image_002_Experiment_Telnet_The_First_Request_Local_Browser_Test](images/Image_002_Experiment_Telnet_The_First_Request_Local_Browser_Test.png)
 
+<br>
+<br>
+<br>
 
 ---
 
@@ -301,6 +330,11 @@ Connection closed by foreign host.
 
 <img width="3546" height="1352" alt="CleanShot 2026-11-21 at 21 46 50@2x" src="https://github.com/user-attachments/assets/31bf410c-5a3d-4ea6-8413-6183b66fe51d" />
 
+
+
+<br>
+<br>
+<br>
 
 #### 003_get_folder_slash_200_telnet_local
 
@@ -371,6 +405,10 @@ localhost:8080/testFolder/
 <img width="3914" height="634" alt="CleanShot 2026-11-21 at 21 43 05@2x" src="https://github.com/user-attachments/assets/7ca2fdcd-85e2-4c36-92ac-e8028f676e73" />
 
 
+
+<br>
+<br>
+<br>
 
 
 #### 004_get_missingFile_404_telnet_local
@@ -506,6 +544,12 @@ Connection closed by foreign host.
 - **Read the response:** `"headers"` lists only `Host` - telnet sends nothing
   you didn't type. (curl and httr2 add more, see chapter 5.)
 
+
+
+<br>
+<br>
+<br>
+
 #### 030_get_httpbin_querySpaceEncoded_200_telnet_internet
 
 <!-- include: 1_telnet/030_get_httpbin_querySpaceEncoded_200_telnet_internet.http -->
@@ -564,6 +608,12 @@ Connection closed by foreign host.
 - **What happens:** `"args": {"city": "St Gallen"}`, while `"url"` still
   shows `St%20Gallen`: the URL travels encoded, the value arrives decoded.
 - **Lesson:** the same `%20` rule as in paths (Level 5) applies in the query.
+
+
+
+<br>
+<br>
+<br>
 
 #### 031_get_httpbin_queryAmpersandEncoded_200_telnet_internet
 
@@ -687,6 +737,12 @@ Connection closed by foreign host.
   sign must be sent as `%2B`. (In a *path*, `+` is just a plus.)
 
 ---
+
+
+<br>
+<br>
+<br>
+
 
 ### Level 3 - Methods: what you want to do
 
