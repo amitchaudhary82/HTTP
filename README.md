@@ -13,7 +13,7 @@ step builds on the one before. Work through them in order.
 
 - **Terminal**: Terminal.app on macOS, or an equivalent terminal on Linux or Windows
 - **Python 3**: to serve the local files in Chapters 2 and 3
-- **Telnet**: to send raw HTTP requests in Chapters 2 through 6
+- **Telnet or netcat (`nc`)**: to send raw HTTP requests in Chapters 2 through 6
 - **OpenSSL**: to send raw HTTPS requests in Chapter 7
 
 **Optional**
@@ -27,6 +27,7 @@ Check the main tools from a terminal:
 ```bash
 python3 --version
 telnet -h
+nc -h
 openssl version
 curl --version
 ```
@@ -47,6 +48,12 @@ python3 -m http.server 8080 --bind 127.0.0.1
 
 ```bash
 telnet 127.0.0.1 8080
+```
+
+Alternatively, on macOS, use netcat with CRLF line endings:
+
+```bash
+nc -c 127.0.0.1 8080
 ```
 
 Paste this request, including the empty line after `Host: localhost`:
@@ -71,10 +78,10 @@ cd http
 | Chapter | What you learn | Tool | Folder |
 |---|---|---|---|
 | 1 - 2 | What HTTP is, how to set up | - | - |
-| 3 | Experiments on your own Mac (local server) | telnet | `telnet/` |
-| 4 | Simple GET experiments on the internet | telnet | `telnet/` |
-| 5 | Sending data: POST and other methods | telnet | `telnet/` |
-| 6 | Adding authentication | telnet | `telnet/` |
+| 3 | Experiments on your own Mac (local server) | telnet or nc | `telnet/` |
+| 4 | Simple GET experiments on the internet | telnet or nc | `telnet/` |
+| 5 | Sending data: POST and other methods | telnet or nc | `telnet/` |
+| 6 | Adding authentication | telnet or nc | `telnet/` |
 | 7 | Bridge: the same requests, encrypted (HTTPS) | openssl | `openssl/` |
 | 8 | The same examples three ways | curl, RStudio (httr2) | `curl/`, `rstudio/` |
 
@@ -91,6 +98,7 @@ HTTP/
   000_Syntax_NNN_method_scenario_status.txt   file naming rule
   build_readme.sh                             refreshes snippets, numbers and contents
   telnet/          raw requests + start commands         (chapters 3 - 6)
+  NC/              netcat connection commands, reusing telnet/ requests
   openssl/         raw HTTPS requests + connect commands  (chapter 7)
   curl/            curl_examples.sh                      (chapter 8)
   rstudio/         httr2_examples.R, send_http_file.R    (chapter 8)
@@ -255,6 +263,17 @@ telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
 
 ```
 
+On macOS, netcat is another option; use `nc -c` to send CRLF line endings:
+
+```bash
+nc -c 127.0.0.1 8080
+```
+
+In the usual interactive setup, pressing Enter in Telnet or macOS `nc -c`
+sends `0D 0A` (CR LF). The blank line that ends the headers is a second
+`0D 0A`, so the request ends with `0D 0A 0D 0A`. Without `-c`, macOS `nc`
+usually sends only `0A` for Enter.
+
 ![ch2_telnet_connection_ok](images/ch2_telnet_connection_ok.png)
 
 
@@ -266,6 +285,9 @@ it.
 <br>
 
 All requests are stored as files in `telnet/` and `openssl/`.
+To connect with netcat instead of Telnet, use the macOS commands in
+`NC/000_run_nc_connection.txt`; the raw HTTP request files in `telnet/` are
+the same.
 
 Then paste the request shown with each experiment. The response appears below.
 
@@ -277,6 +299,8 @@ Tips:
 - To quit a hanging telnet: press `Ctrl + ]`, then type `quit`.
 - The files contain **only** the request: no comments, so copy-paste is
   always safe. All explanations live in this README.
+- With netcat, press `Ctrl+C` to close the connection if the server keeps it
+  open. Other operating systems may use a different CRLF option; check `man nc`.
 
 
 <br>
@@ -2803,6 +2827,7 @@ exactly what they write for you. Further httr2 practice lives in the
 | `build_readme.sh` | copies the request files into this README |
 | `telnet/000_run_python_mini_server.txt` | command to start the local server |
 | `telnet/000_run_telnet_connection.txt` | commands to connect (local server, httpbin) |
+| `NC/000_run_nc_connection.txt` | netcat commands for the same plain-HTTP requests |
 | `openssl/000_run_openssl_connection.txt` | commands for HTTPS connections (chapter 7) |
 | `curl/curl_examples.sh` | all examples with curl |
 | `rstudio/httr2_examples.R` | all examples with httr2 |

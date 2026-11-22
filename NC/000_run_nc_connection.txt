@@ -1,0 +1,27 @@
+# macOS netcat (nc) commands for the plain-HTTP request examples.
+# The request files are shared with the Telnet examples in ../telnet/.
+# Do not use these commands for HTTPS; use ../openssl/ for TLS examples.
+# Other nc implementations use different options; check `man nc` first.
+
+# Start the local server from the repository root in another terminal:
+cd http_mini_server_root
+python3 -m http.server 8080 --bind 127.0.0.1
+
+# Local server, from a second terminal at the repository root:
+nc -c 127.0.0.1 8080
+
+# Public plain-HTTP examples (macOS /usr/bin/nc):
+nc -c httpbin.org 80
+nc -c example.org 80
+
+# Then type or paste the request from the matching file in ../telnet/.
+# For example, after connecting locally, send the contents of:
+#   ../telnet/E301_get_root_200_telnet_local.http
+# Press Enter on an empty line after the headers to finish the request.
+#
+# On macOS, nc -c sends CRLF line endings. Other nc implementations may use a
+# different option; check `man nc` on your system.
+# Press Ctrl+C to close the nc connection if the server keeps it open.
+#
+# The bearer token in E602 is only a dummy. Never send real credentials over
+# plain HTTP.

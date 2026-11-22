@@ -202,3 +202,109 @@ curl -v -H "Accept: application/json" -A "FileTest/1.0" "${BIN}/get"
 # E702 GitHub API. Try it once without -A: GitHub needs a User-Agent
 #     (curl sends its own "curl/x.y", so this one still works).
 curl -A "hello-http-learning (amitchaudhary82)" "https://api.github.com/zen"
+
+
+# =============================================================================
+# Extra practice - useful commands and more HTTP behavior
+# =============================================================================
+
+# SERVER AND CONNECTION CHECKS
+# Run these in Terminal. They help verify setup before sending experiments.
+#
+# lsof -nP -iTCP:8080 -sTCP:LISTEN
+# dig httpbin.org
+# nslookup httpbin.org
+# curl -i "${LOCAL}/testfile.txt"
+#
+# To stop the local Python server, press Ctrl+C in the server terminal.
+
+
+# CURL DIAGNOSTICS
+# Print the complete conversation, including bytes that curl sends and receives.
+curl --trace-ascii - "${LOCAL}/"
+
+# Save response headers and body in temporary files for later inspection.
+umask 077
+CURL_HEADERS=$(mktemp "${TMPDIR:-/tmp}/http-curl-headers.XXXXXX")
+CURL_BODY=$(mktemp "${TMPDIR:-/tmp}/http-curl-body.XXXXXX")
+curl -D "${CURL_HEADERS}" -o "${CURL_BODY}" "${BIN}/get"
+printf 'Temporary headers: %s\nTemporary body: %s\n' "${CURL_HEADERS}" "${CURL_BODY}"
+
+# Remove diagnostic files after inspection.
+rm -f "${CURL_HEADERS}" "${CURL_BODY}"
+
+# Print timing details and keep the body out of the terminal.
+curl -sS -w "\nstatus=%{http_code} time=%{time_total}s\n" \
+  -o /dev/null "${BIN}/get"
+
+# Include the error response body instead of failing silently.
+curl --fail-with-body -i "${BIN}/status/404"
+
+
+# CONDITIONAL REQUEST
+# First read the Last-Modified or ETag header.
+curl -I "${LOCAL}/testfile.txt"
+
+# Then paste that value into the If-Modified-Since line and run it.
+# A conditional hit should return 304 Not Modified with no body.
+curl -i -H "If-Modified-Since: <paste Last-Modified value here>" \
+  "${LOCAL}/testfile.txt"
+
+
+# COMPRESSION
+# Ask for a compressed response and let curl decompress it for display.
+curl -H "Accept-Encoding: gzip" --compressed -i "${BIN}/anything"
+
+
+# RANGE REQUEST
+# Ask for only the first five bytes of a local file.
+curl -i -H "Range: bytes=0-4" "${LOCAL}/testfile.txt"
+
+
+# COOKIES - temporary-only storage
+# This jar is created outside the repository and restricted to the current user.
+# It is not intended for README text, screenshots, source control, or reuse.
+umask 077
+COOKIE_JAR=$(mktemp "${TMPDIR:-/tmp}/http-curl-cookies.XXXXXX")
+
+# Receive and store the cookie in the temporary jar.
+curl -i -c "${COOKIE_JAR}" "${BIN}/cookies/set/session/123"
+
+# Send the cookie back from the temporary jar.
+curl -i -b "${COOKIE_JAR}" "${BIN}/cookies"
+
+# Remove the temporary cookie jar when this practice is finished.
+rm -f "${COOKIE_JAR}"
+
+
+# MULTIPART UPLOAD
+# Form fields and a file are sent in one multipart request.
+curl -i -F "name=Amit" -F "file=@http_mini_server_root/testfile.txt" \
+  "${BIN}/post"
+
+
+# TIMEOUT AND RETRY
+# Limit connection and total time, and retry a slow or interrupted request.
+curl --connect-timeout 3 --max-time 10 --retry 3 \
+  -i "${BIN}/delay/2"
+
+
+# REDIRECTS
+# See the first redirect without following it, then follow the chain.
+curl -i "${BIN}/absolute-redirect/2"
+curl -iL "${BIN}/absolute-redirect/2"
+
+
+# RATE-LIMIT STYLE RESPONSE
+curl -i "${BIN}/status/429"
+
+
+# HTTP PROTOCOL COMPARISON
+# Compare HTTP/1.1 and HTTP/2 behavior where the server supports it.
+curl --http1.1 -i "${BIN}/get"
+curl --http2 -i "${BIN}/get"
+
+
+# TLS CERTIFICATE AND CHAIN INSPECTION
+openssl s_client -connect httpbin.org:443 \
+  -servername httpbin.org -verify_return_error
