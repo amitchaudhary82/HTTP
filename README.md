@@ -328,8 +328,6 @@ Connection closed by foreign host.
 - **Read the response:** `Content-Length: 0` - no body at all, the
   `Location` header is the whole message.
 
-<img width="3546" height="1352" alt="CleanShot 2026-11-21 at 21 46 50@2x" src="https://github.com/user-attachments/assets/31bf410c-5a3d-4ea6-8413-6183b66fe51d" />
-
 
 
 <br>
@@ -402,8 +400,6 @@ This can also be simulated in browser via using
 ```bash
 localhost:8080/testFolder/
 ```
-<img width="3914" height="634" alt="CleanShot 2026-11-21 at 21 43 05@2x" src="https://github.com/user-attachments/assets/7ca2fdcd-85e2-4c36-92ac-e8028f676e73" />
-
 
 
 <br>
