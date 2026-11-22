@@ -424,6 +424,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET / HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -532,6 +533,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testFolder HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -594,6 +596,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testFolder/ HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -672,6 +675,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /missingFile.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -745,6 +749,7 @@ telnet 127.0.0.1 8080
 ```bash
 HEAD / HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -781,6 +786,7 @@ telnet 127.0.0.1 8080
 ```bash
 BADMETHOD / HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -849,6 +855,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testfile.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -887,6 +894,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testFolder/testSubfolderFile.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -923,6 +931,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET // HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -1017,6 +1026,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testfile with space.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -1054,6 +1064,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /"testfile with space.txt" HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -1090,6 +1101,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /testfile%20with%20space.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -1127,6 +1139,7 @@ telnet 127.0.0.1 8080
 ```bash
 GET /test_file%25special%40parm%20german_%C3%A4.txt HTTP/1.1
 Host: localhost
+
 ```
 <!-- /include -->
 
@@ -1232,6 +1245,7 @@ telnet httpbin.org 80
 GET / HTTP/1.1
 Host: httpbin.org
 Connection: close
+
 ```
 <!-- /include -->
 
@@ -1675,6 +1689,7 @@ Host: httpbin.org
 Accept: application/json
 User-Agent: FileTest/1.0
 Connection: close
+
 ```
 <!-- /include -->
 
@@ -2419,22 +2434,30 @@ Message files stay the same.
 Open the repository folder in RStudio and load the shared helpers once:
 
 ```r
-source("rstudio/http_helpers.R")   # message_request(), show(), send_http_file() ...
+library(dplyr)                      # for the %>% pipe
+source("rstudio/http_helpers.R")   # read_..., split_..., prepare_..., send_... (see the file header)
 ```
 
-**One Message** - the helper turns the file into an httr2 request:
+**One Message** - read the file, then say where it goes (the Carrier is
+always given in the call, never taken from the file):
 
 ```r
-req <- message_request("messages/E301_get_root_200_local.http")
-req_dry_run(req)     # what httr2 would send - compare with the file
-resp <- show(req)    # send it: "->" = sent, "<-" = received
+req <-
+  read_http_message_from_file("messages/E301_get_root_200_local.http") %>%
+    prepare_request_from_http_message("127.0.0.1", 8080)
+
+req_dry_run(req)                      # what httr2 would send - compare with the file
+resp <- send_request_to_server(req)   # send it: "->" = sent, "<-" = received
 ```
 
-**The raw Carrier in R** - `send_http_file()` sends a file byte for byte,
-like telnet. Use it to compare wherever httr2 behaves differently:
+**The raw Carrier in R** - `send_raw_http_message_to_server()` sends the
+Message byte for byte, like telnet. Use it to compare wherever httr2 behaves
+differently:
 
 ```r
-send_http_file("messages/E503_post_httpbinText_shortLength_200_internet.http")
+read_http_message_from_file("messages/E503_post_httpbinText_shortLength_200_internet.http") %>%
+  send_raw_http_message_to_server("httpbin.org", 80) %>%
+  cat(sep = "\n")
 ```
 
 **All Part 1 Messages at once** - a for loop sends every file of chapters 3
@@ -2473,7 +2496,7 @@ httr2::curl_translate("curl -H 'Accept: application/json' https://httpbin.org/ge
 
 | Experiments | Raw Carrier (telnet, nc, ncat) | httr2 / curl |
 |---|---|---|
-| E302, E413 redirects | you see the 301/302 | httr2 follows unless `followlocation = FALSE`; curl shows it (add `-L` to follow) |
+| E302, E413 redirects | you see the 301/302 | our helpers show it (strict; `follow_redirects = TRUE` lets httr2 follow); curl shows it (add `-L` to follow) |
 | E311, E312 raw spaces | server answers 400 | the tool refuses or encodes the URL |
 | E315, E404 missing Host | sent without Host | Host is always added (curl: remove with `-H "Host:"`) |
 | E503 - E505 wrong or missing Content-Length | server reads the wrong number of bytes | the tool calculates the length, the whole body arrives |
@@ -2754,9 +2777,22 @@ The same idea as chapter 6, for the authentication and HTTPS Messages.
 ### 9.1 With RStudio (httr2)
 
 ```r
+library(dplyr)                      # for the %>% pipe
 source("rstudio/http_helpers.R")
-resp <- show(message_request("messages/E702_get_httpbin_bearerToken_200_internet.http"))
-resp <- show(message_request("messages/E801_get_httpbin_200_https.http"))
+
+req <-
+  read_http_message_from_file("messages/E702_get_httpbin_bearerToken_200_internet.http") %>%
+    prepare_request_from_http_message("httpbin.org", 80)
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
+
+req <-
+  read_http_message_from_file("messages/E801_get_httpbin_200_https.http") %>%
+    prepare_request_from_http_message("httpbin.org", 443, scheme = "https")
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 ```
 
 - **Tokens:** E702 copies the dummy token from the file. For a real API, a
@@ -2874,7 +2910,7 @@ exactly what they write for you. Further httr2 practice lives in the
 | `000_run_python_mini_server.txt` | command to start the local server |
 | `messages/` | The Message: all 44 HTTP requests, the golden source |
 | `carriers/telnet.txt`, `nc.txt`, `ncat.txt`, `openssl.txt` | The Carrier: connect commands |
-| `rstudio/http_helpers.R` | shared R functions: `message_request()`, `show()`, `send_http_file()` (defines only, sends nothing) |
+| `rstudio/http_helpers.R` | shared R functions (defines only, sends nothing): `read_http_message_from_file()`, `split_http_message_into_parts()`, `send_raw_http_message_to_server()`, `prepare_request_from_parts()`, `prepare_request_from_http_message()`, `send_request_to_server()` |
 | `rstudio/practice_part1_basics.R` | chapter 6: every Part 1 Message with httr2, plus a for loop over all |
 | `rstudio/practice_part2_auth_https.R` | chapter 9: authentication and HTTPS Messages with httr2, plus a real GitHub call |
 | `curl/http_to_curl.sh` | shared function: turns a Message file into a curl command |

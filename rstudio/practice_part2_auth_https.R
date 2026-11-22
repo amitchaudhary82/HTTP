@@ -3,13 +3,14 @@
 # =============================================================================
 #
 # The Message files (messages/) are the golden source: nothing is copied
-# here. message_request() reads a file and builds the httr2 request from it.
+# here. read_http_message_from_file() reads a file; WHERE it goes (host,
+# port) is always written in the call - the Message and the Carrier stay apart.
 #
 # HOW TO USE
 #   Open the repository folder in RStudio (working directory = repo root),
 #   run SETUP once, then one example at a time (Cmd+Enter).
 #     req_dry_run(req)   what httr2 WOULD send (nothing is sent)
-#     show(req)          send it; "->" = sent, "<-" = received
+#     send_request_to_server(req)   send it; "->" = sent, "<-" = received
 # =============================================================================
 
 
@@ -24,7 +25,7 @@ for (pkg in c("httr2", "httpuv", "dplyr", "tibble")) {   # httpuv: needed by req
 library(httr2)
 library(dplyr)
 library(tibble)
-source("rstudio/http_helpers.R")   # message_request(), show(), send_http_file() ...
+source("rstudio/http_helpers.R")   # read_http_message_from_file(), send_..., prepare_... (see the file header)
 
 
 # =============================================================================
@@ -32,13 +33,21 @@ source("rstudio/http_helpers.R")   # message_request(), show(), send_http_file()
 # =============================================================================
 
 # E701  GET httpbin bearerMissing, expect 401 (internet)
-req <- message_request("messages/E701_get_httpbin_bearerMissing_401_internet.http")
-resp <- show(req)
+req <-
+  read_http_message_from_file("messages/E701_get_httpbin_bearerMissing_401_internet.http") %>%
+    prepare_request_from_http_message("httpbin.org", 80)
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 
 # E702  GET httpbin bearerToken, expect 200 (internet)
 #   The token is copied from the file into the Authorization header.
-req <- message_request("messages/E702_get_httpbin_bearerToken_200_internet.http")
-resp <- show(req)
+req <-
+  read_http_message_from_file("messages/E702_get_httpbin_bearerToken_200_internet.http") %>%
+    prepare_request_from_http_message("httpbin.org", 80)
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 
 
 # =============================================================================
@@ -47,13 +56,21 @@ resp <- show(req)
 
 # E801  GET httpbin, expect 200 (https)
 #   https:// - httr2 builds the encrypted tunnel, nothing else changes.
-req <- message_request("messages/E801_get_httpbin_200_https.http")
-resp <- show(req)
+req <-
+  read_http_message_from_file("messages/E801_get_httpbin_200_https.http") %>%
+    prepare_request_from_http_message("httpbin.org", 443, scheme = "https")
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 
 # E802  GET githubApi zen, expect 200 (https)
 #   The User-Agent from the file is sent; GitHub requires one.
-req <- message_request("messages/E802_get_githubApi_zen_200_https.http")
-resp <- show(req)
+req <-
+  read_http_message_from_file("messages/E802_get_githubApi_zen_200_https.http") %>%
+    prepare_request_from_http_message("api.github.com", 443, scheme = "https")
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 
 
 # =============================================================================
@@ -63,8 +80,11 @@ resp <- show(req)
 #   usethis::edit_r_environ()     add the line  GITHUB_PAT=ghp_...   then restart R
 # Then use it from the environment:
 
-req <- request("https://api.github.com/user") |>
-  req_auth_bearer_token(Sys.getenv("GITHUB_PAT")) |>
-  req_user_agent("hello-http-learning (amitchaudhary82)")
-resp <- show(req)
+req <-
+  request("https://api.github.com/user") %>%
+    req_auth_bearer_token(Sys.getenv("GITHUB_PAT")) %>%
+    req_user_agent("hello-http-learning (amitchaudhary82)")
+
+req_dry_run(req)
+resp <- send_request_to_server(req)
 resp_body_json(resp)$login        # your GitHub user name

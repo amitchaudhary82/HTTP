@@ -5,53 +5,63 @@
 # Only definitions live here: sourcing this file sends nothing.
 # The practice files start with:   source("rstudio/http_helpers.R")
 #
-#   read_message(file)      The Message file -> its parts (method, target,
-#                           headers, body)
-#   message_request(file)   The Message file -> an httr2 request
-#   show(req)               send a request, print the whole conversation,
-#                           keep 4xx/5xx responses (no R error)
-#   send_http_file(file)    send The Message byte for byte over a raw socket:
-#                           a raw Carrier inside R, like telnet or nc
-#   expected_status(file)   the status the file name predicts (E304_..._404_...)
+# The Message and the Carrier stay apart:
+#   - a Message file only stores the HTTP text
+#   - WHERE it goes (host, port, scheme) is always given by you when you call
+#     a function; nothing here guesses the server
 #
-# Where the server is: taken from the file name suffix and the Host: line
-#   _local     http://127.0.0.1:8080
-#   _internet  http://<Host>        (httpbin.org if the file has no Host)
-#   _https     https://<Host>
+# The functions follow Examples 1 - 6 in practice_part1_basics.R.
+# "read/split/prepare" = nothing is sent;  "send" = something goes out.
+#
+#   THE MESSAGE
+#     read_http_message_from_file(file)        file -> HTTP text (CRLF)
+#     split_http_message_into_parts(msg)       HTTP text -> method, path,
+#                                              headers, body
+#
+#   THE CARRIER - raw socket, no httr2 (Examples 1 - 3)
+#     send_raw_http_message_to_server(msg, host, port)
+#                                              send HTTP text exactly as it
+#                                              is, return the answer lines
+#
+#   THE FORM - httr2 writes the Message for us (Examples 5 - 6)
+#     prepare_request_from_parts(scheme, host, port, method, path, headers, body,
+#                                follow_redirects = FALSE)
+#                                              the ONLY function that fills
+#                                              in the httr2 form; strict by
+#                                              default: a 301/302 is shown,
+#                                              not followed
+#     prepare_request_from_http_message(msg, host, port, scheme)
+#                                              HTTP text -> parts -> form
+#     send_request_to_server(req)              httr2 sends it, prints the
+#                                              conversation, keeps 4xx/5xx
+#
+#   SMALL HELPERS
+#     header_value(headers, name)              one header, any upper/lower case
+#     never_error(resp)                        for req_error(): never an R error
+#     expected_status(file)                    the status the file name predicts
+#
+# Typical use (pipes):
+#   read_http_message_from_file("messages/E301_get_root_200_local.http") %>%
+#     send_raw_http_message_to_server("127.0.0.1", 8080)
+#
+#   req <-
+#     read_http_message_from_file("messages/E301_get_root_200_local.http") %>%
+#     prepare_request_from_http_message("127.0.0.1", 8080)
+#   req_dry_run(req)
+#   resp <- send_request_to_server(req)
 # =============================================================================
 
 library(httr2)
 
 
+# =============================================================================
+# SMALL HELPERS
+# =============================================================================
+
 # -----------------------------------------------------------------------------
 # Keep 4xx/5xx responses instead of stopping with an R error
 # -----------------------------------------------------------------------------
 never_error <- function(resp) FALSE
-
-
-# -----------------------------------------------------------------------------
-# Send a request and print the conversation (like curl -v):
-#   "->" lines = sent, "<-" lines = received
-# -----------------------------------------------------------------------------
-show <- function(req) {
-  req |>
-    req_error(is_error = never_error) |>
-    req_perform(verbosity = 1)
-}
-
-
-# -----------------------------------------------------------------------------
-# Base URL from the file name suffix (_local, _internet, _https) and Host
-# -----------------------------------------------------------------------------
-message_base_url <- function(file, host = "") {
-  if (grepl("_local\\.http$", file)) {
-    return("http://127.0.0.1:8080")
-  }
-  if (host == "") host <- "httpbin.org"
-  if (grepl("_internet\\.http$", file)) return(paste0("http://", host))
-  if (grepl("_https\\.http$", file))    return(paste0("https://", host))
-  stop("Unknown suffix (expected _local, _internet, _https): ", file, call. = FALSE)
-}
 
 
 # -----------------------------------------------------------------------------
@@ -64,65 +74,137 @@ expected_status <- function(file) {
 
 
 # -----------------------------------------------------------------------------
-# Read a Message file into its parts: method, target, headers, body
+# One header from the list, name in any upper/lower case ("" if missing)
+#   header_value(parts$headers, "host")   -> "localhost"
 # -----------------------------------------------------------------------------
-read_message <- function(file) {
-  lines <- readLines(file, warn = FALSE)
-  lines <- sub("\r$", "", lines)
-
-  # request line: METHOD TARGET VERSION (TARGET may contain spaces, see E311)
-  words  <- strsplit(lines[1], " ")[[1]]
-  method <- words[1]
-  target <- paste(words[2:(length(words) - 1)], collapse = " ")
-
-  # headers: from line 2 until the first empty line
-  header_names  <- character(0)
-  header_values <- character(0)
-  body_start <- length(lines) + 1
-  for (i in seq_along(lines)[-1]) {
-    if (lines[i] == "") {
-      body_start <- i + 1
-      break
+header_value <- function(headers, name) {
+  for (header_name in names(headers)) {
+    if (tolower(header_name) == tolower(name)) {
+      return(headers[[header_name]])
     }
-    header_names  <- c(header_names,  trimws(sub(":.*$", "", lines[i])))
-    header_values <- c(header_values, trimws(sub("^[^:]*:", "", lines[i])))
   }
+  ""
+}
 
-  # body: everything after the empty line
-  body <- ""
-  if (body_start <= length(lines)) {
-    body <- paste(lines[body_start:length(lines)], collapse = "\n")
-  }
-  # a second request after the empty line (E414) is not a body
-  if (grepl("^[A-Z]+ [^ ]+ HTTP/", body)) {
-    message("Note: ", basename(file), " holds more than one request; only the first is used.")
-    body <- ""
-  }
 
-  list(method = method, target = target,
-       header_names = header_names, header_values = header_values,
-       body = body)
+# =============================================================================
+# THE MESSAGE
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Read a Message file and make it ready for HTTP (CRLF line endings)
+# -----------------------------------------------------------------------------
+read_http_message_from_file <- function(file_name) {
+  if (!file.exists(file_name)) {
+    stop("Message file does not exist: ", file_name, call. = FALSE)
+  }
+  msg_file <- readChar(con = file_name, nchars = file.size(file_name), useBytes = TRUE)
+  gsub("\r?\n", "\r\n", msg_file)                # file has \n, HTTP needs \r\n
 }
 
 
 # -----------------------------------------------------------------------------
-# Build the httr2 request for a Message file
-#   Host and Content-Length are NOT copied: httr2 (curl) sets them itself.
+# HTTP text -> its parts: list(method, path, headers, body)
+#   "GET /testfile.txt HTTP/1.1\r\nHost: localhost\r\n\r\n"
+#   -> method "GET", path "/testfile.txt", headers list(Host = "localhost"),
+#      body ""
+#   Works with CRLF (\r\n) and LF (\n) line endings.
 # -----------------------------------------------------------------------------
-message_request <- function(file) {
-  msg  <- read_message(file)
-  host <- ""
-  hit  <- which(tolower(msg$header_names) == "host")
-  if (length(hit) > 0) host <- msg$header_values[hit[1]]
+split_http_message_into_parts <- function(msg) {
+  msg <- gsub("\r\n", "\n", msg)                 # one line-ending style to work with
 
-  req <- request(paste0(message_base_url(file, host), msg$target)) |>
-    req_method(msg$method)
+  # head | empty line | body
+  split_at <- regexpr("\n\n", msg, fixed = TRUE)
+  if (split_at == -1) {                          # no empty line (E506)
+    head_text <- msg
+    body      <- ""
+  } else {
+    head_text <- substr(msg, 1, split_at - 1)
+    body      <- substr(msg, split_at + 2, nchar(msg))
+  }
+  head_lines <- strsplit(head_text, "\n", fixed = TRUE)[[1]]
+
+  # first line: METHOD PATH VERSION (PATH may contain spaces, see E311)
+  words  <- strsplit(head_lines[1], " ")[[1]]
+  method <- words[1]
+  path   <- paste(words[2:(length(words) - 1)], collapse = " ")
+
+  # header lines: "Name: value"
+  headers <- list()
+  for (line in head_lines[-1]) {
+    if (!grepl(":", line)) next                  # not a header (E506: the body line)
+    name  <- trimws(sub(":.*$", "", line))
+    value <- trimws(sub("^[^:]*:", "", line))
+    headers[[name]] <- value
+  }
+
+  # a second request after the empty line (E414) is not a body
+  if (grepl("^[A-Z]+ [^ ]+ HTTP/", body)) {
+    message("Note: the Message holds more than one request; only the first is used.")
+    body <- ""
+  }
+
+  list(method = method, path = path, headers = headers, body = body)
+}
+
+
+# =============================================================================
+# THE CARRIER - raw socket, no httr2 (Examples 1 - 3)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Send HTTP text exactly as it is (like telnet) and return the answer lines
+#   Plain HTTP only: a raw socket cannot encrypt (HTTPS: carriers/openssl.txt).
+#   Messages without "Connection: close" (E502, E504) wait up to
+#   timeout_value seconds.
+# -----------------------------------------------------------------------------
+send_raw_http_message_to_server <- function(msg, host_name, port_number, timeout_value = 10) {
+  # 2. Open the connection
+  con <- socketConnection(host = host_name, port = as.integer(port_number),
+                          open = "r+", blocking = TRUE, timeout = timeout_value)
+  on.exit(close(con))                            # closes the connection whenever the function ends
+
+  # 3. Send the Message
+  writeChar(msg, con, eos = NULL, useBytes = TRUE)   # eos = NULL: only the text, no extra end byte
+  flush(con)                                     # send whatever is still waiting, now
+
+  # 4. Read the answer
+  answer <- readLines(con, warn = FALSE)
+  if (length(answer) == 0) {
+    stop("No answer from ", host_name, ":", port_number, call. = FALSE)
+  }
+  answer
+}
+
+
+# =============================================================================
+# THE FORM - httr2 writes the Message for us (Examples 5 - 6)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Fill in the httr2 form from parts - the only function that builds a request
+#   prepare_request_from_parts("http", "127.0.0.1", 8080, "GET", "/testfile.txt")
+#   Host and Content-Length are NOT copied: httr2 (curl) writes them itself.
+# -----------------------------------------------------------------------------
+prepare_request_from_parts <- function(scheme, host, port, method = "GET", path = "/",
+                                       headers = list(), body = "",
+                                       follow_redirects = FALSE) {
+  # address: scheme://host:port (the port is left out when it is the usual one)
+  base_url <- paste0(scheme, "://", host)
+  usual_port <- (scheme == "http" && port == 80) || (scheme == "https" && port == 443)
+  if (!usual_port) {
+    base_url <- paste0(base_url, ":", port)
+  }
+
+  # = request(base_url) + req_url_path_append(path), in one go, so the path and
+  #   a query (?city=St%20Gallen) stay exactly as written in the Message
+  req <- request(paste0(base_url, path))
+  req <- req_method(req, method)
 
   content_type <- "text/plain"
-  for (i in seq_along(msg$header_names)) {
-    name  <- msg$header_names[i]
-    value <- msg$header_values[i]
-    if (tolower(name) %in% c("host", "content-length")) next   # httr2 sets these
+  for (name in names(headers)) {
+    value <- headers[[name]]
+    if (tolower(name) %in% c("host", "content-length")) next   # httr2 writes these
     if (tolower(name) == "content-type") {
       content_type <- value                                    # used with the body
       next
@@ -130,52 +212,40 @@ message_request <- function(file) {
     req <- req_headers(req, !!name := value)
   }
 
-  if (msg$body != "") {
-    req <- req_body_raw(req, msg$body, type = content_type)
+  if (body != "") {
+    req <- req_body_raw(req, body, type = content_type)
+  }
+
+  # Strict like telnet: show a 301/302 instead of asking again at its Location.
+  # follow_redirects = TRUE gives httr2's normal behaviour (follow them).
+  if (!follow_redirects) {
+    req <- req_options(req, followlocation = FALSE)
   }
   req
 }
 
 
 # -----------------------------------------------------------------------------
-# Send a Message file exactly as written, over a raw TCP connection
-#   LF line endings become CR LF; a final CR LF is added if the request does
-#   not end with an empty line. Plain HTTP only (_local, _internet).
-#   Files without "Connection: close" (E502, E504) wait up to `timeout` seconds.
+# HTTP text -> parts -> httr2 form (nothing is sent)
+#   prepare_request_from_http_message(
+#     "GET /testfile.txt HTTP/1.1\r\nHost: localhost\r\n\r\n", "127.0.0.1", 8080)
+#   For HTTPS: ..., "httpbin.org", 443, scheme = "https")
 # -----------------------------------------------------------------------------
-send_http_file <- function(file, timeout = 10) {
-  if (!file.exists(file)) {
-    stop("Message file does not exist: ", file, call. = FALSE)
-  }
-  if (grepl("_https\\.http$", file)) {
-    stop("HTTPS needs encryption; use carriers/openssl.txt or ncat --ssl.", call. = FALSE)
-  }
+prepare_request_from_http_message <- function(msg, host, port, scheme = "http",
+                                              follow_redirects = FALSE) {
+  parts <- split_http_message_into_parts(msg)
+  prepare_request_from_parts(scheme, host, port,
+                             method = parts$method, path = parts$path,
+                             headers = parts$headers, body = parts$body,
+                             follow_redirects = follow_redirects)
+}
 
-  lines <- sub("\r$", "", readLines(file, warn = FALSE))
-  host_line <- grep("^[Hh]ost:", lines, value = TRUE)
-  if (grepl("_local\\.http$", file)) {
-    host <- "127.0.0.1"
-    port <- 8080
-  } else {
-    host <- if (length(host_line) > 0) trimws(sub("^[Hh]ost:", "", host_line[1])) else "httpbin.org"
-    port <- 80
-  }
 
-  request_text <- readChar(file, file.size(file), useBytes = TRUE)
-  request_text <- gsub("\r?\n", "\r\n", request_text)
-  if (!grepl("\r\n\r\n$", request_text)) {
-    request_text <- paste0(request_text, "\r\n")
-  }
-
-  con <- socketConnection(host = host, port = port, open = "r+",
-                          blocking = TRUE, timeout = timeout)
-  on.exit(close(con))
-
-  writeChar(request_text, con, eos = NULL, useBytes = TRUE)
-  flush(con)
-  response <- readLines(con, warn = FALSE)
-  if (length(response) == 0L) {
-    stop("No response received from ", host, ":", port, call. = FALSE)
-  }
-  response
+# -----------------------------------------------------------------------------
+# httr2 sends the request and prints the conversation (like curl -v):
+#   "->" lines = sent, "<-" lines = received. 4xx/5xx are kept, not R errors.
+# -----------------------------------------------------------------------------
+send_request_to_server <- function(req) {
+  req <- req_error(req, is_error = never_error)
+  req_perform(req, verbosity = 1)
 }
