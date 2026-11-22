@@ -76,7 +76,7 @@ awk '
       print ""
       print "**Request**"
       print ""
-      print "```http"
+      print "```bash"
       for (i = 1; i <= n; i++) print req[i]
       print "```"
     }

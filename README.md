@@ -820,7 +820,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testFolder/testSubfolderFile.txt HTTP/1.1
 Host: localhost
 ```
@@ -828,7 +828,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -848,7 +848,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET // HTTP/1.1
 Host: localhost
 ```
@@ -856,7 +856,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -877,7 +877,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 HEAD /testfile.txt HTTP/1.1
 Host: localhost
 
@@ -886,7 +886,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -924,7 +924,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testfile with space.txt HTTP/1.1
 Host: localhost
 ```
@@ -932,7 +932,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -953,7 +953,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /"testfile with space.txt" HTTP/1.1
 Host: localhost
 ```
@@ -961,7 +961,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -981,7 +981,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /testfile%20with%20space.txt HTTP/1.1
 Host: localhost
 ```
@@ -989,7 +989,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1010,7 +1010,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET /test_file%25special%40parm%20german_%C3%A4.txt HTTP/1.1
 Host: localhost
 ```
@@ -1018,7 +1018,7 @@ Host: localhost
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1055,7 +1055,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET / HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1064,7 +1064,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1087,7 +1087,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /ip HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1097,7 +1097,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1118,7 +1118,7 @@ telnet example.org 80
 
 **Request**
 
-```http
+```bash
 GET / HTTP/1.1
 Host: example.org
 Connection: close
@@ -1128,7 +1128,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1148,7 +1148,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get HTTP/1.1
 Connection: close
 
@@ -1157,7 +1157,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1177,7 +1177,7 @@ telnet 127.0.0.1 8080
 
 **Request**
 
-```http
+```bash
 GET / HTTP/1.1
 
 ```
@@ -1185,7 +1185,7 @@ GET / HTTP/1.1
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1212,7 +1212,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /status/201 HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1222,7 +1222,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1241,7 +1241,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /status/204 HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1251,7 +1251,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1270,7 +1270,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /status/500 HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1280,7 +1280,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1299,7 +1299,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /redirect/2 HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1309,7 +1309,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1338,7 +1338,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: text/plain
@@ -1351,7 +1351,7 @@ hello world
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1374,7 +1374,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: application/json
@@ -1386,7 +1386,7 @@ Content-Length: 36
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1417,7 +1417,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: text/plain
@@ -1430,7 +1430,7 @@ hello world
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1450,7 +1450,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: text/plain
@@ -1463,7 +1463,7 @@ hello world
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1484,7 +1484,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: text/plain
@@ -1496,7 +1496,7 @@ hello world
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1518,7 +1518,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 POST /post HTTP/1.1
 Host: httpbin.org
 Content-Type: text/plain
@@ -1530,7 +1530,7 @@ hello world
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1556,7 +1556,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get HTTP/1.1
 Host: httpbin.org
 Accept: application/json
@@ -1567,7 +1567,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1596,7 +1596,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /bearer HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1606,7 +1606,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1627,7 +1627,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /bearer HTTP/1.1
 Host: httpbin.org
 Authorization: Bearer test123
@@ -1638,7 +1638,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1659,7 +1659,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /get?request=1 HTTP/1.1
 Host: httpbin.org
 
@@ -1672,7 +1672,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1701,7 +1701,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 PUT /put HTTP/1.1
 Host: httpbin.org
 Content-Type: application/json
@@ -1714,7 +1714,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1735,7 +1735,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 PATCH /patch HTTP/1.1
 Host: httpbin.org
 Content-Type: application/json
@@ -1748,7 +1748,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1767,7 +1767,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 DELETE /delete HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1777,7 +1777,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1798,7 +1798,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 OPTIONS /get HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1808,7 +1808,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1828,7 +1828,7 @@ telnet httpbin.org 80
 
 **Request**
 
-```http
+```bash
 GET /post HTTP/1.1
 Host: httpbin.org
 Connection: close
@@ -1838,7 +1838,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from telnet here)
 ```
 
@@ -1910,7 +1910,7 @@ openssl s_client -connect httpbin.org:443 -quiet -crlf
 
 **Request**
 
-```http
+```bash
 GET /get HTTP/1.1
 Host: httpbin.org
 Accept: application/json
@@ -1922,7 +1922,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from openssl here)
 ```
 
@@ -1941,7 +1941,7 @@ openssl s_client -connect api.github.com:443 -quiet -crlf
 
 **Request**
 
-```http
+```bash
 GET /zen HTTP/1.1
 Host: api.github.com
 User-Agent: hello-http-learning (amitchaudhary82)
@@ -1953,7 +1953,7 @@ Connection: close
 
 **Response**
 
-```http
+```bash
 (paste the response from openssl here)
 ```
 
