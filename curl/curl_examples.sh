@@ -107,42 +107,42 @@ curl -v -H "Host:" "${LOCAL}/"
 curl -v "${WEB}/"
 
 # E402 an API endpoint answering JSON
-curl -s "${BIN}/ip"
+curl -s "${WEB}/ip"
 
 # E403 another server
-curl -s "https://example.org/"
+curl -s "http://example.org/"
 
 # E404 missing Host -> 400. -H "Host:" with an empty value REMOVES the
 #     Host header curl would normally add.
 curl -v -H "Host:" "${WEB}/get"
 
 # E405 two parameters. -G turns the -d values into ?name=Amit&city=Zurich
-curl -G "${BIN}/get" -d name=Amit -d city=Zurich
+curl -G "${WEB}/get" -d name=Amit -d city=Zurich
 
 # E406 space in a value. Look at the "> GET" line in -v: how was it encoded?
-curl -v -G "${BIN}/get" --data-urlencode "city=St Gallen"
+curl -v -G "${WEB}/get" --data-urlencode "city=St Gallen"
 
 # E407 & inside a value: curl encodes it as %26 so it stays one value
-curl -G "${BIN}/get" --data-urlencode "company=Johnson&Johnson" -d country=US
+curl -G "${WEB}/get" --data-urlencode "company=Johnson&Johnson" -d country=US
 
 # E408 plus sign: compare a raw + (becomes a space) with an encoded one
-curl -G "${BIN}/get" -d "q=a+b" --data-urlencode "r=a+b"
+curl -G "${WEB}/get" -d "q=a+b" --data-urlencode "r=a+b"
 
 # E409 own headers: Accept and User-Agent
-curl -v -H "Accept: application/json" -A "FileTest/1.0" "${BIN}/get"
+curl -v -H "Accept: application/json" -A "FileTest/1.0" "${WEB}/get"
 
 # E410 - E412 status codes on demand
-curl -i "${BIN}/status/201"
-curl -i "${BIN}/status/204"
-curl -i "${BIN}/status/500"
+curl -i "${WEB}/status/201"
+curl -i "${WEB}/status/204"
+curl -i "${WEB}/status/500"
 
 # E413 redirect chain: without -L you see the first 302, with -L all hops
-curl -i "${BIN}/redirect/2"
-curl -iL "${BIN}/redirect/2"
+curl -i "${WEB}/redirect/2"
+curl -iL "${WEB}/redirect/2"
 
 # E414 keep-alive: two URLs in one curl call. Look for
 #     "Re-using existing connection" in the * lines.
-curl -v "${BIN}/get?request=1" "${BIN}/get?request=2"
+curl -v "${WEB}/get?request=1" "${WEB}/get?request=2"
 
 
 # =============================================================================
@@ -150,12 +150,12 @@ curl -v "${BIN}/get?request=1" "${BIN}/get?request=2"
 # =============================================================================
 
 # E501 text body. curl calculates Content-Length: 11 for you (see "> " lines)
-curl -v -H "Content-Type: text/plain" --data-binary "hello world" "${BIN}/post"
+curl -v -H "Content-Type: text/plain" --data-binary "hello world" "${WEB}/post"
 
 # E502 JSON body. curl does not close the connection itself either, but it
 #     ends cleanly after one request - no hanging like telnet.
 curl -v -H "Content-Type: application/json" \
-  -d '{"name":"Amit","city":"Switzerland"}' "${BIN}/post"
+  -d '{"name":"Amit","city":"Switzerland"}' "${WEB}/post"
 
 # E503 - E506: NOT needed with curl. curl always calculates Content-Length and
 #   inserts the empty line, so these mistakes can't happen by accident.
@@ -164,20 +164,20 @@ curl -v -H "Content-Type: application/json" \
 
 # E507 PUT: replace the whole resource
 curl -X PUT -H "Content-Type: application/json" \
-  -d '{"name":"Amit","city":"Zurich"}' "${BIN}/put"
+  -d '{"name":"Amit","city":"Zurich"}' "${WEB}/put"
 
 # E508 PATCH: change only one part
 curl -X PATCH -H "Content-Type: application/json" \
-  -d '{"city":"Bern"}' "${BIN}/patch"
+  -d '{"city":"Bern"}' "${WEB}/patch"
 
 # E509 DELETE
-curl -X DELETE "${BIN}/delete"
+curl -X DELETE "${WEB}/delete"
 
 # E510 OPTIONS: look for the Allow header
-curl -i -X OPTIONS "${BIN}/get"
+curl -i -X OPTIONS "${WEB}/get"
 
 # E511 wrong method: GET on /post -> 405
-curl -i "${BIN}/post"
+curl -i "${WEB}/post"
 
 
 # =============================================================================
@@ -185,10 +185,10 @@ curl -i "${BIN}/post"
 # =============================================================================
 
 # E601 protected endpoint without token -> 401
-curl -i "${BIN}/bearer"
+curl -i "${WEB}/bearer"
 
-# E602 with a token -> 200
-curl -H "Authorization: Bearer test123" "${BIN}/bearer"
+# E602 with a dummy token -> 200. Never send real credentials over plain HTTP.
+curl -H "Authorization: Bearer test123" "${WEB}/bearer"
 
 
 # =============================================================================

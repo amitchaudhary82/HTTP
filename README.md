@@ -7,6 +7,67 @@ answers. No browser, no library: just text over a connection.
 Each file is one small experiment. The chapters arrange them so that every
 step builds on the one before. Work through them in order.
 
+**Prerequisites**
+
+**Required**
+
+- **Terminal**: Terminal.app on macOS, or an equivalent terminal on Linux or Windows
+- **Python 3**: to serve the local files in Chapters 2 and 3
+- **Telnet**: to send raw HTTP requests in Chapters 2 through 6
+- **OpenSSL**: to send raw HTTPS requests in Chapter 7
+
+**Optional**
+
+- **curl**: for the command-line comparisons in Chapter 8
+- **R and RStudio**: for the `httr2` comparisons in Chapter 8
+- **Internet access**: for the real-server experiments in Chapters 4 through 8
+
+Check the main tools from a terminal:
+
+```bash
+python3 --version
+telnet -h
+openssl version
+curl --version
+```
+
+**Quick Start**
+
+Start with the local server. Open the repository in Terminal, then use two
+terminal windows.
+
+**Terminal 1 - start the server**
+
+```bash
+cd http_mini_server_root
+python3 -m http.server 8080 --bind 127.0.0.1
+```
+
+**Terminal 2 - connect and send the first request**
+
+```bash
+telnet 127.0.0.1 8080
+```
+
+Paste this request, including the empty line after `Host: localhost`:
+
+```http
+GET / HTTP/1.1
+Host: localhost
+
+```
+
+You should receive `HTTP/1.0 200 OK` and an HTML directory listing. In the
+server terminal, the matching log entry should show `GET / HTTP/1.1` with
+`200`.
+
+Clone the repository, if needed, and enter it:
+
+```bash
+git clone https://github.com/amitchaudhary82/http.git
+cd http
+```
+
 | Chapter | What you learn | Tool | Folder |
 |---|---|---|---|
 | 1 - 2 | What HTTP is, how to set up | - | - |
@@ -47,7 +108,7 @@ HTTP/
 - [Chapter 2: Setup](#chapter-2-setup)
   - [2.1 The servers we talk to](#21-the-servers-we-talk-to)
   - [2.2 Start the local server](#22-start-the-local-server)
-  - [2.3 Connect with telnet to your local Server](#23-connect-with-telnet-to-your-local-server)
+  - [2.3 Connect with Telnet to your local server](#23-connect-with-telnet-to-your-local-server)
 - [Chapter 3: The Experiments, Local Telnet](#chapter-3-the-experiments-local-telnet)
   - [3.1 The first request](#31-the-first-request)
   - [3.2 Paths: asking for different things](#32-paths-asking-for-different-things)
@@ -80,6 +141,7 @@ HTTP/
   - [8.3 All examples side by side](#83-all-examples-side-by-side)
 - [Chapter 9: What you can do now](#chapter-9-what-you-can-do-now)
 - [Chapter 10: Other files](#chapter-10-other-files)
+  - [10.1 Maintaining this README](#101-maintaining-this-readme)
 <!-- /toc -->
 
 <br>
@@ -88,6 +150,8 @@ HTTP/
 
 
 ## Chapter 1: The big idea in 60 seconds
+
+> Chapter navigation: [Next: Chapter 2](#chapter-2-setup)
 
 When you open a web page, your computer sends the server a short **text
 message** (the *request*) and the server sends a text message back (the
@@ -133,6 +197,17 @@ thing at a time.
 
 ## Chapter 2: Setup
 
+> Chapter navigation: [Previous: Chapter 1](#chapter-1-the-big-idea-in-60-seconds)
+> · [Next: Chapter 3](#chapter-3-the-experiments-local-telnet)
+
+**Setup checklist**
+
+- [ ] Python 3 is installed and available as `python3`
+- [ ] Telnet is installed
+- [ ] This repository is the current working directory
+- [ ] Port `8080` is available
+- [ ] The server terminal remains open while you complete Chapters 2 and 3
+
 ### 2.1 The servers we talk to
 
 | Server | What | File suffix | Folder |
@@ -146,6 +221,10 @@ to send it even when it's copied somewhere else.
 
 **httpbin.org** is a test server made for learning: it replies with a
 description of the request it received, so you can see exactly what you sent.
+
+> **Internet note:** Chapters 4 through 8 contain experiments against live
+> public servers. Internet access is required, and a remote service may
+> temporarily change its response or become unavailable.
 
 ### 2.2 Start the local server
 
@@ -167,7 +246,7 @@ Additional Info:
 - leave this Terminal open; it shows every request it receives
 
 
-### 2.3 Connect with telnet to your local Server
+### 2.3 Connect with Telnet to your local server
 
 Open a **second** Terminal and connect to the server
 
@@ -179,7 +258,9 @@ telnet 127.0.0.1 8080       # local server    (files ending _telnet_local)
 ![ch2_telnet_connection_ok](images/ch2_telnet_connection_ok.png)
 
 
-At this point you are connected to the Server, and you need to give your request which is now the below exercises
+At this point you are connected to the server. Paste the request for the
+experiment you are working through; the server's response will appear below
+it.
 <br>
 <br>
 <br>
@@ -204,6 +285,9 @@ Tips:
 
 
 ## Chapter 3: The Experiments, Local Telnet
+
+> Chapter navigation: [Previous: Chapter 2](#chapter-2-setup)
+> · [Next: Chapter 4](#chapter-4-the-simple-get-experiments-internet)
 
 For this experiment we have setup folder and files with simple and special characters and we will try few combinations which will return the file names back
 
@@ -1006,6 +1090,13 @@ GET / HTTP/1.1
 
 ## Chapter 4: The Simple GET Experiments, Internet
 
+> Chapter navigation: [Previous: Chapter 3](#chapter-3-the-experiments-local-telnet)
+> · [Next: Chapter 5](#chapter-5-the-simple-post-experiments-internet)
+
+These experiments require internet access and plain HTTP. Live server
+responses can change; use the expected status code and response structure
+from each experiment as a success check, not exact wording or formatting.
+
 All experiments in this chapter go to real servers on the internet:
 `telnet httpbin.org 80` (or `telnet example.org 80` for E403).
 
@@ -1707,6 +1798,9 @@ Connection: close
 
 ## Chapter 5: The Simple POST Experiments, Internet
 
+> Chapter navigation: [Previous: Chapter 4](#chapter-4-the-simple-get-experiments-internet)
+> · [Next: Chapter 6](#chapter-6-adding-authentication)
+
 
 ### 5.1 Sending data (POST)
 
@@ -2191,6 +2285,9 @@ Connection: close
 
 ## Chapter 6: Adding Authentication
 
+> Chapter navigation: [Previous: Chapter 5](#chapter-5-the-simple-post-experiments-internet)
+> · [Next: Chapter 7](#chapter-7-bridge-from-http-to-https)
+
 
 ### 6.1 Logging in with a token
 
@@ -2265,9 +2362,13 @@ Connection: close
 
 - **Objective:** send a token in the `Authorization` header.
 - **What happens:** `200 OK`, JSON `{"authenticated": true, "token": "test123"}`.
-- **Lesson:** this is exactly how APIs like GitHub work: your token travels
-  in `Authorization: Bearer <token>` with every request. Never put a real
-  token in a file you commit.
+- **Test value only:** `test123` is not a real credential. Do not replace it
+  with a real API token; public services and committed repositories can expose
+  secrets.
+- **Lesson:** `Authorization: Bearer <token>` is a common API auth format.
+  `test123` is only a dummy token: this example uses plain HTTP, so a real
+  token would be exposed. Real credentials require HTTPS and should never be
+  committed to a file.
 
 <br>
 <br>
@@ -2276,6 +2377,12 @@ Connection: close
 ---
 
 ## Chapter 7: Bridge: from HTTP to HTTPS
+
+> Chapter navigation: [Previous: Chapter 6](#chapter-6-adding-authentication)
+> · [Next: Chapter 8](#chapter-8-the-same-examples-three-ways-telnet-curl-rstudio)
+
+OpenSSL and these HTTPS experiments require internet access. Confirm that
+DNS and TLS connections are available before continuing.
 
 Almost every real API (GitHub included) only speaks **HTTPS**. telnet can't
 do that. This chapter shows that HTTPS is **the same HTTP you already know,
@@ -2434,6 +2541,9 @@ Next step: tools that write the request text for you too.
 
 ## Chapter 8: The same examples three ways: telnet, curl, RStudio
 
+> Chapter navigation: [Previous: Chapter 7](#chapter-7-bridge-from-http-to-https)
+> · [Next: Chapter 9](#chapter-9-what-you-can-do-now)
+
 You've written every request by hand. Now let two tools write them, and
 compare with what you know.
 
@@ -2445,7 +2555,7 @@ for you:
 |---|---|---|
 | `curl/` | `curl_examples.sh` | VS Code: one line at a time with "Run Selected Text" (the script refuses a whole-file run on purpose) |
 | `rstudio/` | `httr2_examples.R` | RStudio: open the repo as project, run section 0, then one example at a time (`Cmd + Enter`) |
-| `rstudio/` | `send_http_file.R` | sends the raw files from `telnet/` unchanged - telnet inside R |
+| `rstudio/` | `send_http_file.R` | sends request text from `telnet/`, normalizing line endings - telnet inside R |
 
 The tables below are the **comparison**: what each example looks like in
 each tool, side by side.
@@ -2487,21 +2597,35 @@ sending it: `req_dry_run()`.
 
 ### 8.2 Bonus: telnet inside RStudio
 
-R can open a raw connection too, so you can send your **unchanged** `.http`
-files from RStudio (full script: `rstudio/send_http_file.R`). Open RStudio
-in this repo folder, then:
+R can open a raw connection too, so you can send the request text in your
+`.http` files from RStudio (full script: `rstudio/send_http_file.R`). The
+helper converts LF line endings to HTTP's CRLF, adds a final CRLF when needed
+to terminate the request, and returns the response as text lines. Source the
+script to define the helper; it makes no requests until you call it. Open
+RStudio in this repo folder, then:
 
 ```r
-# Send a .http file as-is over a raw connection, like telnet.
+# Send a plain-text .http file over a raw connection, like telnet.
 # Only for plain HTTP (_telnet_local and _telnet_internet files), not HTTPS.
 send_http_file <- function(file, host, port = 80) {
+  if (!file.exists(file)) {
+    stop("Request file does not exist: ", file, call. = FALSE)
+  }
   request_text <- readChar(file, file.size(file), useBytes = TRUE)
   request_text <- gsub("\r?\n", "\r\n", request_text)   # HTTP line endings
+  if (!grepl("\r\n\r\n$", request_text)) {
+    request_text <- paste0(request_text, "\r\n")
+  }
   con <- socketConnection(host = host, port = port,
                           open = "r+", blocking = TRUE, timeout = 10)
   on.exit(close(con))
-  cat(request_text, file = con)
-  readLines(con, warn = FALSE)                          # the raw response
+  writeChar(request_text, con, eos = NULL, useBytes = TRUE)
+  flush(con)
+  response <- readLines(con, warn = FALSE)
+  if (length(response) == 0L) {
+    stop("No response received from ", host, ":", port, call. = FALSE)
+  }
+  response
 }
 
 send_http_file("telnet/E301_get_root_200_telnet_local.http", "127.0.0.1", 8080)
@@ -2517,6 +2641,7 @@ Setup for the R lines:
 ```r
 library(httr2)
 local <- request("http://127.0.0.1:8080")
+web   <- request("http://httpbin.org")
 bin   <- request("https://httpbin.org")
 never_error <- function(resp) FALSE    # keep 4xx/5xx responses to inspect
 ```
@@ -2540,10 +2665,10 @@ adding `-L` keeps the 301.
 
 | File | curl | httr2 |
 |---|---|---|
-| E405 | `curl -G https://httpbin.org/get -d name=Amit -d city=Zurich` | `bin \|> req_url_path_append("get") \|> req_url_query(name = "Amit", city = "Zurich")` |
-| E406 | `curl -G https://httpbin.org/get --data-urlencode "city=St Gallen"` | `... req_url_query(city = "St Gallen")` |
-| E407 | `curl -G https://httpbin.org/get --data-urlencode "company=Johnson&Johnson"` | `... req_url_query(company = "Johnson&Johnson")` |
-| E408 | `curl -G https://httpbin.org/get --data-urlencode "r=a+b"` | `... req_url_query(r = "a+b")` |
+| E405 | `curl -G http://httpbin.org/get -d name=Amit -d city=Zurich` | `web \|> req_url_path_append("get") \|> req_url_query(name = "Amit", city = "Zurich")` |
+| E406 | `curl -G http://httpbin.org/get --data-urlencode "city=St Gallen"` | `... req_url_query(city = "St Gallen")` |
+| E407 | `curl -G http://httpbin.org/get --data-urlencode "company=Johnson&Johnson"` | `... req_url_query(company = "Johnson&Johnson")` |
+| E408 | `curl -G http://httpbin.org/get --data-urlencode "r=a+b"` | `... req_url_query(r = "a+b")` |
 
 Exercise: run `req_dry_run()` and find how httr2 encoded the space, the `&`
 and the `+`. Compare with your files E406 - E408.
@@ -2554,11 +2679,11 @@ and the `+`. Compare with your files E406 - E408.
 |---|---|---|
 | E305 / E310 | `curl -I http://127.0.0.1:8080/testfile.txt` | `local \|> req_url_path_append("testfile.txt") \|> req_method("HEAD")` |
 | E306 | `curl -v -X BADMETHOD http://127.0.0.1:8080/` | `local \|> req_method("BADMETHOD")` |
-| E507 | `curl -X PUT -H "Content-Type: application/json" -d '{"name":"Amit","city":"Zurich"}' https://httpbin.org/put` | `bin \|> req_url_path_append("put") \|> req_method("PUT") \|> req_body_json(list(name = "Amit", city = "Zurich"))` |
-| E508 | `curl -X PATCH -H "Content-Type: application/json" -d '{"city":"Bern"}' https://httpbin.org/patch` | `bin \|> req_url_path_append("patch") \|> req_method("PATCH") \|> req_body_json(list(city = "Bern"))` |
-| E509 | `curl -X DELETE https://httpbin.org/delete` | `bin \|> req_url_path_append("delete") \|> req_method("DELETE")` |
-| E510 | `curl -i -X OPTIONS https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_method("OPTIONS")`, then `resp_header(resp, "allow")` |
-| E511 | `curl -i https://httpbin.org/post` | `bin \|> req_url_path_append("post")` (GET is the default) |
+| E507 | `curl -X PUT -H "Content-Type: application/json" -d '{"name":"Amit","city":"Zurich"}' http://httpbin.org/put` | `web \|> req_url_path_append("put") \|> req_method("PUT") \|> req_body_json(list(name = "Amit", city = "Zurich"))` |
+| E508 | `curl -X PATCH -H "Content-Type: application/json" -d '{"city":"Bern"}' http://httpbin.org/patch` | `web \|> req_url_path_append("patch") \|> req_method("PATCH") \|> req_body_json(list(city = "Bern"))` |
+| E509 | `curl -X DELETE http://httpbin.org/delete` | `web \|> req_url_path_append("delete") \|> req_method("DELETE")` |
+| E510 | `curl -i -X OPTIONS http://httpbin.org/get` | `web \|> req_url_path_append("get") \|> req_method("OPTIONS")`, then `resp_header(resp, "allow")` |
+| E511 | `curl -i http://httpbin.org/post` | `web \|> req_url_path_append("post")` (GET is the default) |
 
 **3.5: encoding in paths**
 
@@ -2576,11 +2701,11 @@ isn't encoded, use `curl::curl_escape("ä")` to see what it should be.
 | File | curl | httr2 |
 |---|---|---|
 | E401 | `curl -v http://httpbin.org/` | `request("http://httpbin.org")` |
-| E402 | `curl https://httpbin.org/ip` | `bin \|> req_url_path_append("ip")`, then `resp_body_json(resp)` |
-| E403 | `curl https://example.org/` | `request("https://example.org")` |
+| E402 | `curl http://httpbin.org/ip` | `web \|> req_url_path_append("ip")`, then `resp_body_json(resp)` |
+| E403 | `curl http://example.org/` | `request("http://example.org")` |
 | E404 | `curl -v -H "Host:" http://httpbin.org/get` | not possible: httr2 always sends `Host` |
-| E410 - E412 | `curl -i https://httpbin.org/status/201` (204, 500) | `bin \|> req_url_path_append("status", "201")` |
-| E413 | `curl -i https://httpbin.org/redirect/2` (add `-L` to follow) | `bin \|> req_url_path_append("redirect", "2") \|> req_options(followlocation = FALSE)` |
+| E410 - E412 | `curl -i http://httpbin.org/status/201` (204, 500) | `web \|> req_url_path_append("status", "201")` |
+| E413 | `curl -i http://httpbin.org/redirect/2` (add `-L` to follow) | `web \|> req_url_path_append("redirect", "2") \|> req_options(followlocation = FALSE)` |
 
 In curl, `-H "Host:"` (empty value) *removes* a header curl would normally
 add - a handy trick to repeat E404.
@@ -2589,8 +2714,8 @@ add - a handy trick to repeat E404.
 
 | File | curl | httr2 |
 |---|---|---|
-| E501 | `curl -H "Content-Type: text/plain" --data-binary "hello world" https://httpbin.org/post` | `bin \|> req_url_path_append("post") \|> req_body_raw("hello world", type = "text/plain")` |
-| E502 | `curl -H "Content-Type: application/json" -d '{"name":"Amit","city":"Switzerland"}' https://httpbin.org/post` | `bin \|> req_url_path_append("post") \|> req_body_json(list(name = "Amit", city = "Switzerland"))` |
+| E501 | `curl -H "Content-Type: text/plain" --data-binary "hello world" http://httpbin.org/post` | `web \|> req_url_path_append("post") \|> req_body_raw("hello world", type = "text/plain")` |
+| E502 | `curl -H "Content-Type: application/json" -d '{"name":"Amit","city":"Switzerland"}' http://httpbin.org/post` | `web \|> req_url_path_append("post") \|> req_body_json(list(name = "Amit", city = "Switzerland"))` |
 | E503 - E506 | (calculated for you) | (calculated for you) |
 
 This is the clearest difference between the worlds: curl and httr2
@@ -2602,10 +2727,10 @@ mistakes of 5.2 simply can't happen. Look for `Content-Length` in the
 
 | File | curl | httr2 |
 |---|---|---|
-| E409 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" https://httpbin.org/get` | `bin \|> req_url_path_append("get") \|> req_headers(Accept = "application/json") \|> req_user_agent("FileTest/1.0")` |
-| E601 | `curl -i https://httpbin.org/bearer` | `bin \|> req_url_path_append("bearer")` |
-| E602 | `curl -H "Authorization: Bearer test123" https://httpbin.org/bearer` | `bin \|> req_url_path_append("bearer") \|> req_auth_bearer_token("test123")` |
-| E414 | `curl -v "https://httpbin.org/get?request=1" "https://httpbin.org/get?request=2"` | two `req_perform()` calls in a row |
+| E409 | `curl -v -H "Accept: application/json" -A "FileTest/1.0" http://httpbin.org/get` | `web \|> req_url_path_append("get") \|> req_headers(Accept = "application/json") \|> req_user_agent("FileTest/1.0")` |
+| E601 | `curl -i http://httpbin.org/bearer` | `web \|> req_url_path_append("bearer")` |
+| E602 | `curl -H "Authorization: Bearer test123" http://httpbin.org/bearer` | `web \|> req_url_path_append("bearer") \|> req_auth_bearer_token("test123")` |
+| E414 | `curl -v "http://httpbin.org/get?request=1" "http://httpbin.org/get?request=2"` | two `req_perform()` calls in a row |
 
 For E414, look for `Re-using existing connection` in curl's `-v` output: that
 is keep-alive, done for you.
@@ -2619,7 +2744,7 @@ is keep-alive, done for you.
 
 With curl and httr2 the encryption is invisible: just write `https://`.
 In `-v` output, the lines starting with `*` show the TLS tunnel being built
-(certificate, protocol) - the work openssl did in chapter 4.
+(certificate, protocol) - the work OpenSSL did in Chapter 7.
 
 ---
 
@@ -2629,6 +2754,9 @@ In `-v` output, the lines starting with `*` show the TLS tunnel being built
 
 
 ## Chapter 9: What you can do now
+
+> Chapter navigation: [Previous: Chapter 8](#chapter-8-the-same-examples-three-ways-telnet-curl-rstudio)
+> · [Next: Chapter 10](#chapter-10-other-files)
 
 After these 44 experiments you have written every part of an HTTP request
 yourself:
@@ -2647,9 +2775,18 @@ yourself:
 | HTTPS | E701, E702 |
 | Status codes 200, 201, 204, 301, 302, 400, 401, 404, 405, 500, 501 | all |
 
+**Success criteria**
+
+- The status code matches the experiment name or table entry.
+- The response type matches the lesson: a file, JSON data, a redirect,
+  an error, or headers.
+- The local server log shows the method and path you sent.
+- For live-server experiments, differences in dates, headers, or body wording
+  are acceptable when the status and HTTP behavior are correct.
+
 ...and you can send the same requests with curl and with R's httr2, knowing
 exactly what they write for you. Further httr2 practice lives in the
-**GitHub_HTTP** repository.
+[**GitHub_HTTP** repository](https://github.com/amitchaudhary82/GitHub_HTTP).
 
 <br>
 <br>
@@ -2657,6 +2794,8 @@ exactly what they write for you. Further httr2 practice lives in the
 
 
 ## Chapter 10: Other files
+
+> Chapter navigation: [Previous: Chapter 9](#chapter-9-what-you-can-do-now)
 
 | File | Content |
 |---|---|
@@ -2668,5 +2807,31 @@ exactly what they write for you. Further httr2 practice lives in the
 | `curl/curl_examples.sh` | all examples with curl |
 | `rstudio/httr2_examples.R` | all examples with httr2 |
 | `rstudio/send_http_file.R` | raw files sent from R, like telnet |
+| `validate_readme.py` | offline check for request includes, experiment IDs and image links |
 | `http_mini_server_root/` | files served by the local server (incl. tricky names) |
 | `http_mini_server_root/Info_Encoding_Characters.txt` | notes on URL structure and special characters |
+
+### 10.1 Maintaining this README
+
+The request files in `telnet/` and `openssl/` are the source of truth for
+request snippets. Do not edit those snippets directly in this README.
+
+After changing a request file or heading, run the maintainer script from the
+repository folder:
+
+```bash
+bash build_readme.sh
+./validate_readme.py
+git diff --stat README.md
+git diff README.md
+```
+
+The script:
+
+- Replaces the README snippets between `<!-- include: -->` markers with the
+  current request files
+- Rebuilds the table of contents
+- Numbers Chapter and section headings consistently
+
+The offline validator checks that request snippets and image references still
+point to existing files, and that experiment IDs remain unique.

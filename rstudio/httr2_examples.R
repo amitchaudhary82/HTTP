@@ -115,17 +115,17 @@ req_dry_run(req)
 resp <- show(web)
 
 # E402 JSON API endpoint
-resp <- show(bin |> req_url_path_append("ip"))
+resp <- show(web |> req_url_path_append("ip"))
 resp_body_json(resp)
 
 # E403 another server
-resp <- show(request("https://example.org"))
+resp <- show(request("http://example.org"))
 
 # E404 / E315 missing Host: NOT possible with httr2 - it always sends Host.
 #   (curl can remove it with -H "Host:", see ../3_curl)
 
 # E405 two parameters
-req <- bin |>
+req <- web |>
   req_url_path_append("get") |>
   req_url_query(name = "Amit", city = "Zurich")
 req$url
@@ -135,14 +135,14 @@ resp_body_json(resp)$args
 # E406 - E408 special characters in values.
 # Exercise: look at req$url - how did httr2 encode the space, & and + ?
 # Compare with your raw files 406, 407, 408.
-req <- bin |>
+req <- web |>
   req_url_path_append("get") |>
   req_url_query(city = "St Gallen", company = "Johnson&Johnson", r = "a+b")
 req$url
 resp_body_json(show(req))$args
 
 # E409 own headers
-req <- bin |>
+req <- web |>
   req_url_path_append("get") |>
   req_headers(Accept = "application/json") |>
   req_user_agent("FileTest/1.0")
@@ -150,7 +150,7 @@ resp_body_json(show(req))$headers
 
 # E410 - E412 status codes on demand, with a for loop
 for (code in c("201", "204", "500")) {
-  resp <- bin |>
+  resp <- web |>
     req_url_path_append("status", code) |>
     req_error(is_error = never_error) |>
     req_perform()
@@ -158,14 +158,14 @@ for (code in c("201", "204", "500")) {
 }
 
 # E413 redirect chain: switch off following to see the first 302
-resp <- show(bin |> req_url_path_append("redirect", "2") |>
+resp <- show(web |> req_url_path_append("redirect", "2") |>
                req_options(followlocation = FALSE))
 resp_header(resp, "location")
 
 # E414 two requests. httr2 manages connections itself; compare the "*" or
 #     connection lines of both calls in the verbose output.
-resp1 <- show(bin |> req_url_path_append("get") |> req_url_query(request = 1))
-resp2 <- show(bin |> req_url_path_append("get") |> req_url_query(request = 2))
+resp1 <- show(web |> req_url_path_append("get") |> req_url_query(request = 1))
+resp2 <- show(web |> req_url_path_append("get") |> req_url_query(request = 2))
 
 
 # =============================================================================
@@ -173,14 +173,14 @@ resp2 <- show(bin |> req_url_path_append("get") |> req_url_query(request = 2))
 # =============================================================================
 
 # E501 text body: httr2 calculates Content-Length (look at the -> lines)
-req <- bin |>
+req <- web |>
   req_url_path_append("post") |>
   req_body_raw("hello world", type = "text/plain")
 req_dry_run(req)
 resp_body_json(show(req))$data
 
 # E502 JSON body: req_body_json() sets Content-Type and turns the list into JSON
-req <- bin |>
+req <- web |>
   req_url_path_append("post") |>
   req_body_json(list(name = "Amit", city = "Switzerland"))
 req_dry_run(req)
@@ -191,28 +191,28 @@ resp_body_json(show(req))$json
 #   raw files with send_http_file.R.
 
 # E507 PUT
-req <- bin |>
+req <- web |>
   req_url_path_append("put") |>
   req_method("PUT") |>
   req_body_json(list(name = "Amit", city = "Zurich"))
 resp_body_json(show(req))$json
 
 # E508 PATCH
-req <- bin |>
+req <- web |>
   req_url_path_append("patch") |>
   req_method("PATCH") |>
   req_body_json(list(city = "Bern"))
 resp_body_json(show(req))$json
 
 # E509 DELETE
-resp <- show(bin |> req_url_path_append("delete") |> req_method("DELETE"))
+resp <- show(web |> req_url_path_append("delete") |> req_method("DELETE"))
 
 # E510 OPTIONS: which methods are allowed?
-resp <- show(bin |> req_url_path_append("get") |> req_method("OPTIONS"))
+resp <- show(web |> req_url_path_append("get") |> req_method("OPTIONS"))
 resp_header(resp, "allow")
 
 # E511 wrong method: GET on /post -> 405
-resp <- show(bin |> req_url_path_append("post"))
+resp <- show(web |> req_url_path_append("post"))
 resp_status(resp)
 
 
@@ -221,12 +221,12 @@ resp_status(resp)
 # =============================================================================
 
 # E601 without token -> 401
-resp <- show(bin |> req_url_path_append("bearer"))
+resp <- show(web |> req_url_path_append("bearer"))
 resp_status(resp)
 
-# E602 with token -> 200. For real tokens use Sys.getenv("GITHUB_PAT"),
-#     never a token written in the script.
-req <- bin |>
+# E602 with a dummy token -> 200. Never send real credentials over plain HTTP;
+#     real API tokens must use HTTPS and should come from Sys.getenv().
+req <- web |>
   req_url_path_append("bearer") |>
   req_auth_bearer_token("test123")
 resp_body_json(show(req))
