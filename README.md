@@ -400,6 +400,11 @@ This can also be simulated in browser via using
 ```bash
 localhost:8080/testFolder/
 ```
+<br>
+<br>
+
+
+![Image_003_Experiment_Telnet_Get_Folder_Slash_Local_Browser_Test](images/Image_003_Experiment_Telnet_Get_Folder_Slash_Local_Browser_Test.png)
 
 
 <br>
