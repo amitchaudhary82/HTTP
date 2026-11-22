@@ -14,7 +14,11 @@ status: expected status like 200, 403, 500
 
 
 tool + server suffix:
-  _telnet_local     telnet to the local Python mini server  (folder 1_telnet)
-  _telnet_internet  telnet to an internet server, port 80   (folder 1_telnet)
-  _openssl          openssl to an HTTPS server, port 443     (folder 2_openssl)
-Example: 001_get_root_200_telnet_local.http
+  _telnet_local     telnet to the local Python mini server  (folder telnet)
+  _telnet_internet  telnet to an internet server, port 80   (folder telnet)
+  _openssl          openssl to an HTTPS server, port 443     (folder openssl)
+Example: E301_get_root_200_telnet_local.http
+
+ID: ECNN = E for Experiment + chapter + number (E301 = chapter 3, first experiment)
+    The E keeps IDs apart from HTTP status codes: E404 = experiment, 404 = Not Found
+Pictures: images/ECNN_what.png (e.g. images/E301_browser.png); chapter pictures: images/chN_what.png
